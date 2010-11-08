@@ -5,7 +5,7 @@ var assert = require('assert');
 
 var
   count = 0,
-  hasRun = [false, false];
+  hasRun = [false, false, false, false];
 
 process.on('exit', function() {
   hasRun.forEach(function(v,i) {
@@ -13,16 +13,28 @@ process.on('exit', function() {
   });
 });
 
-var p1 = sh('cat /home/guillaume/bin/node');
 
-p1.then(function() {
+/*
+ * here we mainly test a closure as a second argument, and check the resulting
+ * plumbing
+ */
+sh('ls . nxfile').pipe('sed s/test/TTEESSTT/', function(c) {
   hasRun[0] = true;
-  console.log("p1 returned:", this.status);
-});
+  
+  c.out.result(function(arg) {
+    hasRun[1] = true;
+    assert.ok(arg.indexOf('TTEESSTT') > -1, 'we get sed\'s output, not ls\'');
+  });
 
-var p2 = p1('true');
+  c.or(function(status) {
+    throw new Error('sed is supposed to return 0, we got: ' + status);
+  });
+  
+  c.and(function() {
+    hasRun[2] = true;
+  });
+}).err('sed s/nxfile/NXFILE/').result(function(arg) {
+  hasRun[3] = true;
+  assert.ok(arg.indexOf('NXFILE') > -1, 'we get the second sed\'s output');
+});;
 
-p2.then(function() {
-  hasRun[1] = true;
-  console.log("p2 returned:", this.status);
-});

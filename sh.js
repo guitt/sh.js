@@ -91,8 +91,10 @@ function plug(s) {
   
   var c = this.cmd,
     that = this;
-  
-  if (typeof c[s] === 'object') {
+  if (c[s] === null) {
+    // here, it likely is the case that the user got .pipe on a command
+    // without redirecting both standard streams, so we just ignore it
+  } else if (typeof c[s] === 'object') {
   
     switch(c[s].type) {
     case CMD_TYPE:
@@ -205,8 +207,8 @@ function listen() {
     runExitCommands(command, status);
   });
   
-  if (this.errToOut === true && this.out 
-    && (this.out.type === CACHE_TYPE || this.out.type === FOR_EACH_TYPE)) {
+  if (command.errToOut === true && command.out 
+    && (command.out.type === CACHE_TYPE || command.out.type === FOR_EACH_TYPE)) {
     var
       stdout = p.stdout,
       stderr = p.stderr;
@@ -805,6 +807,52 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
     command.cmd = arg0;
     command.type = CMD_TYPE;
     command.exit = [];
+    
+    if (arg1 === sh.OO) {
+      command.errToOut = true;
+      //console.log('err to out');
+    } else if (typeof arg1 === 'object') {
+      throw new Error('todo'); // TODO: var and maybe command substitution
+    }
+    
+    if (arg1 !== sh.OO && arg2 === sh.OO) {
+      command.errToOut = true;
+    }
+    
+    // closureNumber takes note of which typeof === 'function' is true
+    // so we know which argument to call
+    var closureNumber = -1;
+    if ((typeof arg1 === 'function' && (closureNumber = 1))
+      || (typeof arg2 === 'function' && (closureNumber = 2))
+      || (typeof arg3 === 'function' && (closureNumber = 3))) {
+      if (this.parentState) {
+        var hiddenParent = this.parentState;
+        delete this.parentState;
+      }
+      
+      var cc = this.cacheCommands = [];
+      
+      //command.out = null;
+      //command.err = null;
+      
+      arguments[closureNumber](this.api);
+      
+      if (cc !== this.cacheCommands)
+        throw new Error('internal error: the closure messed up the '
+          + 'cacheCommands');
+      else if (cc.length > 0)
+        throw new Error('bad syntax: .cache was gotten without subsequent call '
+          + 'to .result()');
+      
+      if (hiddenParent)
+        this.parentState = hiddenParent;
+      
+      //if (command.out === null)
+      //  delete command.out;
+      //if (command.err === null)
+      //  delete command.err;
+    }
+    
   } else if (typeof arg0 === 'function') {
     command.func = arg0;
     command.type = FUNC_TYPE;
@@ -948,7 +996,8 @@ var def = {
 var sh = linkjs.makeLib(def);
 exports.sh = sh;
 
-sh.UNSET = ['UNSET'];
+sh.UNSET = ['unset environment variable'];
+sh.OO = ['redirect stdout and stderr to stdOut Only'];
 
 
 var

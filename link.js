@@ -186,6 +186,7 @@ function getterHook(prop) {
   // put the property name that we're getting so the library doesn't need
   // to figure it out
   state.propertyName = prop;
+  state.api = makeAPI(state, hiddenState);
   
   if (typeof property.get === "function" 
     && typeof property.invoke === "function") {
@@ -212,7 +213,7 @@ function getterHook(prop) {
   if (isStatic)
     return this;
     
-  return makeAPI(state, hiddenState);
+  return state.api;
 }
 function setterHook(prop, value) {
   // TODO
@@ -277,14 +278,16 @@ function makeAPI(linkState, linkHiddenState) {
     else
       newState = makeLinkState(parentState, parentHiddenState.libState.linkCtor);
       
+    newHiddenState = makeLinkState(parentHiddenState);
+    newState.api = makeAPI(newState, newHiddenState);
+      
     var rawReturn = invokeFunction.apply(newState, arguments);
     if (rawReturn && rawReturn[0] === true) {
       // if the library wants to return a result, 
       // instead of adding a link to the chain, then do so
       return rawReturn[1];
     }
-    newHiddenState = makeLinkState(parentHiddenState);
-    return makeAPI(newState, newHiddenState);
+    return newState.api;
   }
   ret.__proto__ = linkHiddenState.libState.proto;
   return ret;
@@ -319,6 +322,9 @@ function makeLib(def) {
     }
     var linkState = makeLinkState(null, libHiddenState.linkCtor, libState);
     var linkHiddenState = makeLinkState(null, null, libHiddenState);
+    
+    linkState.api = makeAPI(linkState, linkHiddenState);
+    
     if (typeof def.invoke === "function") {
       var rawReturn = def.invoke.apply(linkState, arguments);
       if (rawReturn && rawReturn[0] === true) {
@@ -328,7 +334,7 @@ function makeLib(def) {
       console.log(api);
       throw new TypeError("no invoke function found in this API");
     }
-    return makeAPI(linkState, linkHiddenState);
+    return linkState.api;
   };
   ret.__proto__ = proto;
   return ret;
