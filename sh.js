@@ -179,6 +179,12 @@ function attemptCallback() {
  */
 function runExitCommands(c, status) {
   var exit = c.exit;
+  
+  // We must not run exit commands from a cache type because, cache types don't
+  // exit, only the associated callback may exit
+  if (c.type === CACHE_TYPE)
+    return;
+    
   if (exit && exit.length) {
     for (var i in exit) {
     
@@ -905,6 +911,7 @@ function ResultCommand(arg0) {
   command.argPosition = cacheCommands.length;
   cacheCommands.push(command);
   command.type = CACHE_TYPE;
+  // unlike .cache, .result exits so it makes sense to behave like a command
   command.exit = [];
   
   if (typeof arg0 === 'function') {

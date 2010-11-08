@@ -1,0 +1,25 @@
+#! /usr/bin/env node
+
+var sh = require('../sh.js').sh;
+var assert = require('assert');
+
+
+
+// remove the tempfile in test 11
+
+
+
+/*
+ * We expect to get one 'hello', one 'bonjour' and one 'hola'
+ */
+sh('ls').result(function(arg) {}).then(function() {
+  console.log('hello');
+});
+
+sh('ls').result(function(arg) {}).then('echo bonjour');
+
+sh('true').then('echo hola');
+
+sh('echo hello').cache
+.then('echo node').cache
+.then('echo world').result(function() {}).then('echo ni hao')
