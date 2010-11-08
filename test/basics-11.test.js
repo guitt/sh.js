@@ -52,7 +52,7 @@ sh('ls . nxfile', sh.OO).file(tmpFile).then('cat ' + tmpFile).result(function(ar
   
   assert.ok(arg.indexOf('nxfile') > -1, 'we get stderr on stdout');
   assert.ok(arg.indexOf('test.js') > -1, 'we get stdout too');
-});
+}).then('rm ' + tmpFile);
 
 // Same but with a closure
 var tmpFile = '/tmp/sh.js_basics-11.test.js.dump' + ((new Date).getTime() + 1);
@@ -62,5 +62,5 @@ sh('ls . nxfile', sh.OO, function(ls) {
     
     assert.ok(arg.indexOf('nxfile') > -1, 'we get stderr on stdout');
     assert.ok(arg.indexOf('test.js') > -1, 'we get stdout too');
-  });
+  }).then('rm ' + tmpFile);
 });
