@@ -3,12 +3,6 @@
 var sh = require('../sh.js').sh;
 var assert = require('assert');
 
-
-
-// remove the tempfile in test 11
-
-
-
 /*
  * We expect to get one 'hello', one 'bonjour' and one 'hola'
  */

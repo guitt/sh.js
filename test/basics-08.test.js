@@ -3,9 +3,7 @@
 var sh = require('../sh.js').sh;
 var assert = require('assert');
 
-var
-  count = 0,
-  hasRun = [false];
+var hasRun = [false];
 
 process.on('exit', function() {
   hasRun.forEach(function(v,i) {
