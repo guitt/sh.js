@@ -3,6 +3,7 @@
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var linkjs = require('./link.js');
+var parser = require('./command_parser.js');
 
 var
   // Types of commands
@@ -353,9 +354,16 @@ Program.prototype = {
     if (this.cmd.errToOut === true)
       this.customFds[2] = this.customFds[1];
     
-    // TODO: commands don't support escaping spaces, quoting arguments
-    var argv = this.cmd.cmd.split(argDelimiter);
-    //console.log(this.customFds);
+    var cmd = this.cmd.cmd;
+    if (cmd instanceof Array) {
+      var argv = [];
+      
+      for (var i in cmd)
+        argv.push(cmd[i]);
+        
+    } else
+      var argv = parser.parse(this.cmd.cmd);
+    
     var executable = argv.shift();
     var options = {
       customFds: this.customFds,
@@ -809,7 +817,7 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
     // we're at the root
   }
 
-  if (typeof arg0 === 'string') {
+  if (typeof arg0 === 'string' || arg0 instanceof Array) {
     command.cmd = arg0;
     command.type = CMD_TYPE;
     command.exit = [];
@@ -1016,7 +1024,8 @@ var
 
 exports._internal = {
   runCommand: runCommand,
-  parseCommand: parseCommand
+  parseCommand: parseCommand,
+  parser: parser
 };
 
 })();
