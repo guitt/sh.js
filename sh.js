@@ -3,7 +3,7 @@
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var linkjs = require('./link.js');
-var parser = require('./command_parser.js');
+var parser = require('./command_parser.js').parser;
 
 var
   // Types of commands
@@ -23,7 +23,6 @@ var
   AND = 'AND',
   OR = 'OR',
   
-  argDelimiter = new RegExp('\\s+', 'g'),
   forEachDelimiter = new RegExp('\\s+(?!$)', 'g'),
   endOfStream = new RegExp('\\s*$');
 

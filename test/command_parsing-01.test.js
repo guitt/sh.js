@@ -1,28 +1,51 @@
 #! /usr/bin/env node
 
 var assert = require('assert');
+var util = require('util');
 var sh = require('../sh.js').sh;
-var parser = require('../command_parser.js');
-
-var hasRun = [false];
+var parser = require('../sh.js')._internal.parser;
 
 
-process.on('exit', function() {
-  hasRun.forEach(function(v,i) {
-    if (!v) throw new Error('callback ' + i + ' has not run');
-  });
-});
-var cmd = 'echo hello world';
+function testParsing(command, argv, msg) {
+  var parsed;
+  try {
+    parsed = parser.parse(command);
+    assert.deepEqual(parsed, argv, msg);
+  } catch (e) {
+    console.log('parsing  : %s', command);
+    if (parsed) console.log('getting  :', util.inspect(parsed));
+    console.log('expecting:', util.inspect(argv));
+    throw e;
+  }
+}
 
-var parsed = parser.parse(cmd);
-var expected = ['echo', 'hello', 'world'];
+function testParsingFails(command, msg) {
+  var parsed;
+  try {
+    assert.throws(function() {
+      parsed = parser.parse(command);
+    }, Error, msg);
+  } catch (e) {
+    console.log('parsing  : %s', command);
+    console.log('getting  :', parsed);
+    console.log('expecting an error');
+    throw e;
+  }
+}
 
-assert.deepEqual(parsed, expected, 'basic space-separated arguments');
+testParsing('echo hello world', ['echo', 'hello', 'world']);
+testParsing('"echo"', ['echo']);
+testParsing('"echo" hello "world"', ['echo', 'hello', 'world']);
+testParsing('"echo" "hello world"', ['echo', 'hello world']);
+testParsing('"ec""ho" "hello" "world"', ['echo', 'hello', 'world']);
+testParsing('"echo" \\" "hello"   \t \n \r "world"',
+  ['echo', '"', 'hello', 'world']);
+testParsing('"echo" "hello \\"world"', ['echo', 'hello "world']);
+testParsing('"echo" \'hello \\"world\'', ['echo', 'hello "world']);
+testParsing('"ec"\'ho\' "hello" \'world\'', ['echo', 'hello', 'world']);
+testParsing('"echo" hello \\\' world', ['echo', 'hello', '\'', 'world']);
+testParsing("ech'o' 'hello''world'", ['echo', 'helloworld']);
+testParsing('echo hello \\\\ world', ['echo', 'hello', '\\', 'world']);
 
-sh(parsed).result(function(a) {
-  sh(cmd).result(function(b) {
-    assert.equal(a, b, 'passing an argv array gives the same result as with '
-      + 'command parsing');
-    hasRun[0] = true;
-  });
-});
+testParsingFails('"echo" " "hello " " world"', 'unmatched/unescaped double quote');
+testParsingFails('"echo" \\ " "hello " " world"', 'unmatched/unescaped double quote');
