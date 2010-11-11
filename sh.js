@@ -65,7 +65,7 @@ function canBe(type) {
 function copyEnv(oldEnv) {
   var newEnv = {};
   for (var i in oldEnv) {
-    newEnv[i] = oldEnv[i];
+    newEnv[i] = oldEnv[i].toString();
   }
   return newEnv;
 }
@@ -475,7 +475,7 @@ function linkCtor() {
       this.workingCommand = {
         // To ease debugging, the sh.EMPTY_ENV may be set so the environment
         // doesn't clutter the console
-        env: sh.EMPTY_ENV ? process.env : {},
+        env: sh.EMPTY_ENV ? {} : process.env,
         cwd: process.cwd()
       };
       
@@ -736,17 +736,40 @@ function EnvCommand(arg0, arg1) {
       throw new Error('bad syntax: cd takes a string as its first argument');
   
   else if (prop === 'define') {
-    var newEnv = copyEnv(command.env);
     
-    if (arg1 === sh.UNSET) {
-      delete newEnv[arg0];
-    } else if (typeof arg1 === 'string') {
-      newEnv[arg0] = arg1;
-    } else 
-      throw new Error('bad argument: the second argument must be either '
-        + 'a string or sh.UNSET; [' + arg1 + '] was provided');
+    if (arg0 === sh.ENV && typeof arg1 === 'object')
+      command.env = copyEnv(arg1);
+    else {
+      var newEnv = copyEnv(command.env);
         
-    command.env = newEnv;
+      if (typeof arg0 === 'string' && arg1 === sh.UNSET) {
+        delete newEnv[arg0];
+        
+      } else if (typeof arg0 === 'object') {
+        var count = 0, arg;
+        
+        for (var i in arg0) {
+          count++;
+          arg = arg0[i];
+          
+          if (arg === sh.UNSET)
+            delete newEnv[i];
+          else
+            newEnv[i] = arg.toString();
+        }
+        
+        if (count === 0)
+          throw new Error('bad argument: the argument has no (enumerable) '
+            + 'properties');
+          
+      } else if (typeof arg0 === 'string') {
+        newEnv[arg0] = arg1.toString();
+        
+      } else 
+        throw new Error('bad argument: .define() got: (' + arg0 + ', ' + arg1
+          + ')');
+      command.env = newEnv;
+    }
   }
 }
 
@@ -1010,6 +1033,7 @@ var sh = linkjs.makeLib(def);
 exports.sh = sh;
 
 sh.UNSET = ['unset environment variable'];
+sh.ENV = ['define complete environment'];
 sh.OO = ['redirect stdout and stderr to stdOut Only'];
 
 
