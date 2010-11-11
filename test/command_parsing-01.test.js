@@ -41,7 +41,7 @@ testParsing('"ec""ho" "hello" "world"', ['echo', 'hello', 'world']);
 testParsing('"echo" \\" "hello"   \t \n \r "world"',
   ['echo', '"', 'hello', 'world']);
 testParsing('"echo" "hello \\"world"', ['echo', 'hello "world']);
-testParsing('"echo" \'hello \\"world\'', ['echo', 'hello "world']);
+testParsing('"echo" \'hello "world\'', ['echo', 'hello "world']);
 testParsing('"ec"\'ho\' "hello" \'world\'', ['echo', 'hello', 'world']);
 testParsing('"echo" hello \\\' world', ['echo', 'hello', '\'', 'world']);
 testParsing("ech'o' 'hello''world'", ['echo', 'helloworld']);

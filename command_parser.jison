@@ -47,17 +47,28 @@ string
     | BACKSLASH SQUOTE { $$ = $2 }
     | BACKSLASH BACKSLASH { $$ = $2 }
     | WORD { $$ = $1 }
-    | DQUOTE quotation DQUOTE { $$ = $2 }
-    | SQUOTE quotation SQUOTE { $$ = $2 } ;
+    | DQUOTE dquotation DQUOTE { $$ = $2 }
+    | SQUOTE squotation SQUOTE { $$ = $2 } ;
 
-quotation
-    : WORD quotation { $$ = $1.concat($2) }
-    | WORD { $$ = $1 }
-    | SPACE quotation { $$ = $1.concat($2) }
+dquotation
+    : WORD dquotation { $$ = $1.concat($2) }
+    | SPACE dquotation { $$ = $1.concat($2) }
+    | BACKSLASH DQUOTE dquotation { $$ = $2.concat($3) }
+    | SQUOTE dquotation { $$ = $1.concat($1) }
+    | BACKSLASH BACKSLASH dquotation { $$ = $2.concat($3) }
+    | common_terminal { $$ = $1 };
+
+squotation
+    : WORD squotation { $$ = $1.concat($2) }
+    | SPACE squotation { $$ = $1.concat($2) }
+    | BACKSLASH SQUOTE squotation { $$ = $2.concat($3) }
+    | DQUOTE squotation { $$ = $1.concat($2) }
+    | BACKSLASH BACKSLASH squotation { $$ = $2.concat($3) }
+    | common_terminal { $$ = $1 };
+
+common_terminal
+    : WORD { $$ = $1 }
     | SPACE { $$ = $1 }
-    | BACKSLASH DQUOTE quotation { $$ = $2.concat($3) }
     | BACKSLASH DQUOTE { $$ = $2 }
-    | BACKSLASH SQUOTE quotation { $$ = $2.concat($3) }
     | BACKSLASH SQUOTE { $$ = $2 }
-    | BACKSLASH BACKSLASH quotation { $$ = $2.concat($3) }
     | BACKSLASH BACKSLASH { $$ = $2 } ;
