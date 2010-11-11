@@ -115,9 +115,8 @@ function plug(s) {
       
       break;
     case PATH_TYPE:
-      if (c.append === true)
-        // FIXME: this doesn't work (tried 'a', 'w+' & 'a+')
-        var flags = 'a+';
+      if (c[s].append === true)
+        var flags = 'a';
       
       else var flags = 'w'
       
