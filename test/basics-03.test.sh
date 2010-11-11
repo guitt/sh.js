@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /usr/bin/env sh
 
 output="`./basics-03.js`"
 count=`echo $output | wc -l`

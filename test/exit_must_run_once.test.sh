@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /usr/bin/env sh
 
 output="`./exit_must_run_once.js`"
 # echo $output

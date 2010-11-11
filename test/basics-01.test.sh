@@ -1,6 +1,6 @@
-#! /usr/bin/env bash
+#! /usr/bin/env sh
 
-if test `./basics-01.js` == "hello"
+if test "`./basics-01.js`" = "hello"
 then exit 0
 else exit 1
 fi

@@ -3,7 +3,7 @@
 var sh = require('../sh.js').sh;
 var assert = require('assert');
 
-var hasRun = [false];
+var hasRun = [false, false];
 
 
 process.on('exit', function() {
@@ -20,4 +20,7 @@ sh('echo hello').file(tmpFile)
   hasRun[0] = true;
   assert.equal(content, 'hello\nworld\n', 'written "hello\n" to a file, and '
     + 'appended "world\n" to it');
+  
+  // remove temp test file
+  sh('rm ' + tmpFile).and(function() { hasRun[1] = true });
 });

@@ -8,16 +8,16 @@ if (process.argv[2]) {
   var c = sh('false');
 }
 
-c.then('echo -e hello');
+c.then('echo hello');
 
 c.and(function() {
   setTimeout(function() {
-    sh('echo -e universe');
+    sh('echo universe');
   }, 20);
 });
 
 c.or(function() {
   setTimeout(function() {
-    sh('echo -e world');
+    sh('echo world');
   }, 20);
 });
