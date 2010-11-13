@@ -2,6 +2,7 @@
 
 var fs = require('fs');
 var spawn = require('child_process').spawn;
+var joinPaths = require('path').join;
 var linkjs = require('./link.js');
 var parser = require('./command_parser.js').parser;
 
@@ -25,6 +26,55 @@ var
   
   forEachDelimiter = new RegExp('\\s+(?!$)', 'g'),
   endOfStream = new RegExp('\\s*$');
+
+function WorkingDir(arg0) {
+  if (arg0 instanceof WorkingDir)
+    this.previousDir = arg0;
+  else if (typeof arg0 === 'string')
+    this.path = arg0;
+  else {
+    console.log(arg0);
+    throw new Error('internal error: bad argument for WorkingDir, got:' + arg0);
+  }
+}
+
+WorkingDir.prototype = {
+  check: function(callback) {
+    var that = this;
+    
+    fs.realpath(this.path, function(err, path) {
+      if (err === null) {
+      
+        fs.lstat(path, function(err, stat) {
+          if (err === null) {
+          
+            if (stat.isDirectory()) {
+              this.path = path;
+              callback(0);
+              
+            } else
+              callback(1);
+              
+          } else {
+            console.log(err);
+            throw new Error('internal errror: unknown error calling fs.lstat()');
+            
+          }
+        });
+        
+      } else if (err && err.errno === 2)
+        callback(2);
+        
+      else
+        throw new Error('internal error: got error' + err);
+    });
+    
+  }
+}
+
+var
+  defaultCwd = new WorkingDir(process.cwd());
+  defaultEnv = process.env;
 
 /*
  *  Check the type provided is consistent with the property name.
@@ -122,7 +172,12 @@ function plug(s) {
       
       var waitingForStream = 'waitingFor'+S;
       
-      fs.open(c[s].path, flags, process.umask, function(err, fd) {
+      var path = c[s].path;
+      if (path.charAt(0) !== '/')
+        // the path is relative, join it with the current directory
+        path = joinPaths(c[s].cwd.path, path);
+      
+      fs.open(path, flags, process.umask, function(err, fd) {
         if (err) {
           if (typeof c[s].onerror === 'function'
             && c[s].onerror(err) === false) {
@@ -366,7 +421,7 @@ Program.prototype = {
     var options = {
       customFds: this.customFds,
       env: this.cmd.env,
-      cwd: process.cwd(),
+      cwd: this.cmd.cwd.path,
       closeFds: true,
     };
     //console.log(executable, argv);
@@ -401,8 +456,38 @@ function runCommand(c, status) {
   case FOR_EACH_TYPE:
     break;
   case ENV_TYPE:
-    // FIXME: check cwd is valid, and provide an exit status accordingly
-    runExitCommands(c, 0);
+    //console.log(c);
+    if (c.nextDir) {
+      if (c.nextDir[0] === '/')
+        c.cwd.path = c.nextDir;
+      else
+        c.cwd.path = joinPaths(c.cwd.previousDir.path, c.nextDir);
+      //console.log('checking new cwd:', c.cwd);
+      c.cwd.check(function(st) {
+        //console.log('checked new cwd:'); console.log(c.cwd);
+        switch (st) {
+        case 0:
+          runExitCommands(c, 0);
+          
+          break;
+        case 1:
+          console.log('.cd():', c.cwd, ' is not a directory');
+          runExitCommands(c, 1);
+          
+          break;
+        case 2:
+          console.log('.cd(): no such directory: ', c.cwd.path);
+          runExitCommands(c, 1);
+          
+          break;
+        default:
+          throw new Error('internal error: got st: ' + st);
+        }
+      });
+      
+    } else
+      runExitCommands(c, 0);
+      
     break;
   case FORK_TYPE:
     var b = c.branches;
@@ -475,8 +560,8 @@ function linkCtor() {
       this.workingCommand = {
         // To ease debugging, the sh.EMPTY_ENV may be set so the environment
         // doesn't clutter the console
-        env: sh.EMPTY_ENV ? {} : process.env,
-        cwd: process.cwd()
+        env: sh.EMPTY_ENV ? {} : defaultEnv,
+        cwd: defaultCwd
       };
       
       this.cacheCommands = [];
@@ -730,9 +815,11 @@ function EnvCommand(arg0, arg1) {
   command.exit = [];
   
   if (prop === 'cd')
-    if (typeof arg0 === 'string')
-      command.cwd = arg0;
-    else
+    if (typeof arg0 === 'string') {
+      command.cwd = new WorkingDir(command.cwd);
+      command.nextDir = arg0;
+      
+    } else
       throw new Error('bad syntax: cd takes a string as its first argument');
   
   else if (prop === 'define') {
@@ -889,7 +976,14 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
     }
     
   } else if (typeof arg0 === 'function') {
-    command.func = arg0;
+    command.func = function() {
+      var originEnv = defaultEnv, originCwd = defaultCwd;
+      defaultEnv = command.env;
+      defaultCwd = command.cwd;
+      arg0.apply(this, arguments);
+      defaultEnv = originEnv;
+      defaultCwd = originCwd;
+    };
     command.type = FUNC_TYPE;
     command.exit = [];
   } else
@@ -917,7 +1011,14 @@ function EachCommand(arg0) {
   
   if (typeof arg0 === 'function') {
     command.type = FOR_EACH_TYPE;
-    command.func = arg0;
+    command.func = function() {
+      var originEnv = defaultEnv, originCwd = defaultCwd;
+      defaultEnv = command.env;
+      defaultCwd = command.cwd;
+      arg0.apply(this, arguments);
+      defaultEnv = originEnv;
+      defaultCwd = originCwd;
+    };
     command.exit = [];
   } else
     throw new Error('bad syntax: each only takes a function as its arguments; '
@@ -946,7 +1047,12 @@ function ResultCommand(arg0) {
   if (typeof arg0 === 'function') {
     var callback = {
       func: function() {
+        var originEnv = defaultEnv, originCwd = defaultCwd;
+        defaultEnv = command.env;
+        defaultCwd = command.cwd;
         arg0.apply(this, arguments);
+        defaultEnv = originEnv;
+        defaultCwd = originCwd;
         runExitCommands(command, 0);
       },
       cacheSize: 0,
