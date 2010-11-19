@@ -202,9 +202,9 @@ You can escape characters:
     // Output:
     hello  world " ' \
 
-In case, quoting or escaping are not satisfying, you may pass an array of arguments instead:
+In case quoting or escaping are not satisfying, you may pass an array of arguments instead:
 
-    sh(['echo', 'hello  world " \\']);
+    sh(['echo', 'hello  world " ' \\']);
 
 Finally, to avoid getting stuck because of a bug, you can access the parser like so:
 
@@ -514,6 +514,20 @@ That's double-capital-O, as in "Output Only".
       c.and('echo configure succeeded');
       c.or('echo configure failed');
     }).file('output+errors');
+
+#### Define environment
+
+If you want a clean environment, use `sh.ENV`:
+
+    // ./24-clean-env.example.js
+    
+    sh.define(sh.ENV, {
+      'MY_VAR': 123
+    })
+    .and('env');
+    
+    // Output: the environment is empty except for the variable we just defined
+    MY_VAR=123
 
 ### Conclusion
 
