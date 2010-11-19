@@ -15,6 +15,7 @@ Why try it?
 -----------
 
 You may find sh.js useful if:
+
 -   you use node.js and you want a high-level, prototyping-friendly API to use Unix utilities from Javascript.
 -   you would like to try shell scripting in a different language than Bourne's (<b>disclaimer: sh.js is far from ready</b>).
 
@@ -179,11 +180,50 @@ That will find socket files and discard errors messages.
 
 <b>Note</b>: see the section on advanced piping to redirect both stdout and stderr.
 
+### Quoting and escaping arguments
+
+Typing commands with sh.js is meant to feel *almost* like a standard shell.
+
+You can quote arguments:
+
+    // ./07-quoting.example.js
+    
+    sh('echo "hello        world"');
+    
+    // Output:
+    hello        world
+
+You can escape characters:
+
+    // ./08-escaping.example.js
+    
+    sh('echo hello\\ \\ world \\" \\\' \\\\');
+    
+    // Output:
+    hello  world " ' \
+
+In case, quoting or escaping are not satisfying, you may pass an array of arguments instead:
+
+    sh(['echo', 'hello  world " \\']);
+
+Finally, to avoid getting stuck because of a bug, you can access the parser like so:
+
+    // ./09-parser.example.js
+
+    var parser = require('../sh.js')._internal.parser;
+    
+    console.log(parser.parse('echo hello\\ \\ world \\" \\\' \\\\'));
+    
+    // Output:
+    [ 'echo', 'hello  world', '"', '\'', '\' ]
+
+The `.parse()` method returns an array with the arguments as it interprets them. If you spot a bug, please report it.
+
 ### Concurrent vs. sequential commands
 
 *sh.js is non-blocking*. Every call returns immediately after some minor computations. For instance, consider:
 
-    // ./07-concurrent.example.js
+    // ./10-concurrent.example.js
     
     sh('date');
     sh('sleep 2');
@@ -201,7 +241,7 @@ Bash equivalent:
 
 If you want to run commands <b>sequentially</b>, use `.then()`:
 
-    // ./08-sequential.example.js
+    // ./11-sequential.example.js
     
     sh('date')
     .then('sleep 2')
@@ -221,7 +261,7 @@ Bash equivalent:
 
 Concurrent and sequential commands are not mutually exclusive, you can use both:
 
-    // ./09-concurrent_sequential.example.js
+    // ./12-concurrent_sequential.example.js
     
     var s = sh('sleep 1');
     
@@ -242,7 +282,7 @@ Bash equivalent:
 
 Using `.and()` and `.or()` methods, you can handle the exit of the previous process depending on its exit status. Take the following example:
 
-    // ./10-gzip_zeros.example.js
+    // ./13-gzip_zeros.example.js
     
     var s = sh('dd if=/dev/zero count=10000 bs=50K')('gzip').file('zeros.gz');
 
@@ -275,7 +315,7 @@ Bash equivalent:
 
 `.and()`, `.or()` and `.then()` all accept functions as arguments, so you can run Javascript instead of a program:
 
-    // ./11-callback.example.js
+    // ./14-callback.example.js
     
     sh('sleep 2').and(function() {
       console.log('woke up!');
@@ -285,7 +325,7 @@ Bash equivalent:
 
 If you want to run commands in a particular directory, call `.cd()` before them in a sequence:
 
-    // ./12-ls_cd_ls.example.js
+    // ./15-ls_cd_ls.example.js
     
     sh('ls -l')
     .and.cd('..')
@@ -301,13 +341,13 @@ You may also use it as a method of `.or`, `.then` or `sh` like below:
 
 Now if you want to set an environment variable, here's how:
 
-    // ./13-grep_my_var.example.js
+    // ./16-grep_my_var.example.js
     
     sh.define('MY_VAR', 123).and('env')('grep MY_VAR');
 
 You may also set several variables in one call:
 
-    // ./14-grep_my_vars.example.js
+    // ./17-grep_my_vars.example.js
     
     sh.define({
       'MY_VAR1': 123,
@@ -317,7 +357,7 @@ You may also set several variables in one call:
 
 Finally, to unset a variable, just set it to `sh.UNSET`:
 
-    // ./16-unset_my_var.example.js
+    // ./18-unset_my_var.example.js
     
     sh.define('MY_VAR', 123)
     .and.define('MY_VAR', sh.UNSET)
@@ -325,7 +365,7 @@ Finally, to unset a variable, just set it to `sh.UNSET`:
 
 By the way, once you `cd` to a directory or set environment variable, you can store the shell in a Javascript variable, and reuse it later:
 
-    // ./15-unset_my_var.example.js
+    // ./19-unset_my_var.example.js
     
     var sh1 = sh.cd('/').and;
     var sh2 = sh.cd('/var').and;
@@ -364,7 +404,7 @@ So I've found four ways that I believe do make sense, three of which are impleme
 
 If you want to pipe both stdout and stderr, you may use `.pipe()` and `.err()`:
 
-    // ./17-chaining_pipes.example.js
+    // ./20-chaining_pipes.example.js
     
     sh('ls / non_existent_file')
       .pipe('grep etc')
@@ -383,7 +423,7 @@ Cons:
 
 By declaring a variable, you can make several method calls on the first command:
 
-    // ./18-pipes_with_variables.example.js
+    // ./21-pipes_with_variables.example.js
     
     var l = sh('ls / non_existent_file');
     
@@ -399,7 +439,7 @@ Cons:
 
 Passing a closure after the command string will run it and identify the piping:
 
-    // ./19-pipes_in_closures.example.js
+    // ./22-pipes_in_closures.example.js
     
     sh('ls / non_existent_file', function(l) {
       l.out('grep etc');
@@ -449,7 +489,7 @@ In Bash, you frequently use several variables before you run a command:
 
 To avoid having too many recursive callbacks, sh.js has the `.cache` property:
 
-    // ./20-cache_result.example.js
+    // ./23-cache_result.example.js
 
     sh('echo hello').cache
     .and('echo world').cache

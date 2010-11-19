@@ -61,7 +61,3 @@ testParsing('echo hello\\ world', ['echo', 'hello world'], 'escape space');
 
 testParsingFails('"echo" " "hello " " world"', 'unmatched/unescaped double quote');
 testParsingFails('"echo" \\ " "hello " " world"', 'unmatched/unescaped double quote');
-
-// FIXME: this should be interpreted as escaping a space
-// to produce ['echo', ' ', 'hello ', ' world']
-//testParsingFails('"echo" \\  "hello " " world"', 'single backslash');
