@@ -46,6 +46,22 @@ testParsing('"ec"\'ho\' "hello" \'world\'', ['echo', 'hello', 'world']);
 testParsing('"echo" hello \\\' world', ['echo', 'hello', '\'', 'world']);
 testParsing("ech'o' 'hello''world'", ['echo', 'helloworld']);
 testParsing('echo hello \\\\ world', ['echo', 'hello', '\\', 'world']);
+testParsing(' echo', ['echo'], 'leading space');
+testParsing('echo  ', ['echo'], 'trailing space');
+testParsing(' echo  ', ['echo'], 'leading and trailing spaces');
+testParsing(' echo hello ', ['echo', 'hello'], 'leading and trailing spaces');
+testParsing('echo ""', ['echo', ''], 'empty quotes');
+testParsing('echo """"', ['echo', ''], 'empty quotes');
+testParsing('echo \'\'', ['echo', ''], 'empty quotes');
+testParsing('echo \'\'\'\'', ['echo', ''], 'empty quotes');
+testParsing('echo \\hello', ['echo', '\\hello'], 'backslash without escaping');
+testParsing('echo "\\hello"', ['echo', '\\hello'], 'backslash without escaping');
+testParsing('echo \\  hello', ['echo', ' ', 'hello'], 'escape space');
+testParsing('echo hello\\ world', ['echo', 'hello world'], 'escape space');
 
 testParsingFails('"echo" " "hello " " world"', 'unmatched/unescaped double quote');
 testParsingFails('"echo" \\ " "hello " " world"', 'unmatched/unescaped double quote');
+
+// FIXME: this should be interpreted as escaping a space
+// to produce ['echo', ' ', 'hello ', ' world']
+//testParsingFails('"echo" \\  "hello " " world"', 'single backslash');

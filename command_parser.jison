@@ -1,6 +1,6 @@
 /* lexical grammar */
 
-/* \s is interpreted to /^\s\b/ instead of /^\s/ , hence the \s{1} */
+/* \s generates /^\s\b/ instead of /^\s/ , hence the \s{1} */
 
 %lex
 %%
@@ -20,11 +20,12 @@
 %% /* language grammar */
 
 command
-    : argument_list EOF
-        {return $1;} ;
+    : argument_list EOF {return $1;}
+    | spaces argument_list EOF {return $2;} ;
 
 argument_list
-    :   argument {
+    : { $$ = [] }
+    | argument {
           if (typeof $1 === 'string')
             $$= [$1];
           else
@@ -46,29 +47,26 @@ string
     : BACKSLASH DQUOTE { $$ = $2 }
     | BACKSLASH SQUOTE { $$ = $2 }
     | BACKSLASH BACKSLASH { $$ = $2 }
+    | BACKSLASH SPACE { $$ = $2 }
+    | BACKSLASH WORD { $$ = '\\' + $2 }
     | WORD { $$ = $1 }
     | DQUOTE dquotation DQUOTE { $$ = $2 }
     | SQUOTE squotation SQUOTE { $$ = $2 } ;
 
 dquotation
-    : WORD dquotation { $$ = $1.concat($2) }
+    : { $$ = '' }
+    | WORD dquotation { $$ = $1.concat($2) }
     | SPACE dquotation { $$ = $1.concat($2) }
     | BACKSLASH DQUOTE dquotation { $$ = $2.concat($3) }
     | SQUOTE dquotation { $$ = $1.concat($1) }
     | BACKSLASH BACKSLASH dquotation { $$ = $2.concat($3) }
-    | common_terminal { $$ = $1 };
+    | BACKSLASH WORD dquotation { $$ = $1.concat($2, $3) } ;
 
 squotation
-    : WORD squotation { $$ = $1.concat($2) }
+    : { $$ = '' }
+    | WORD squotation { $$ = $1.concat($2) }
     | SPACE squotation { $$ = $1.concat($2) }
     | BACKSLASH SQUOTE squotation { $$ = $2.concat($3) }
     | DQUOTE squotation { $$ = $1.concat($2) }
     | BACKSLASH BACKSLASH squotation { $$ = $2.concat($3) }
-    | common_terminal { $$ = $1 };
-
-common_terminal
-    : WORD { $$ = $1 }
-    | SPACE { $$ = $1 }
-    | BACKSLASH DQUOTE { $$ = $2 }
-    | BACKSLASH SQUOTE { $$ = $2 }
-    | BACKSLASH BACKSLASH { $$ = $2 } ;
+    | BACKSLASH WORD squotation { $$ = $1.concat($2, $3) } ;
