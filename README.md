@@ -1,7 +1,7 @@
 What is sh.js?
 ==============
 
-sh.js is a Javascript <b>library</b> for Unix shell scripting working on [node.js](nodejs.org).
+sh.js is a JavaScript <b>library</b> for Unix shell scripting working on [node.js](nodejs.org).
 
 For example, to sort user names in `/etc/passwd` in a classical shell script, you could write:
 
@@ -16,13 +16,13 @@ Why try it?
 
 You may find sh.js useful if:
 
--   you use node.js and you want a high-level, prototyping-friendly API to use Unix utilities from Javascript.
+-   you use node.js and you want a high-level, prototyping-friendly API to use Unix utilities from JavaScript.
 -   you would like to try shell scripting in a different language than Bourne's (<b>disclaimer: sh.js is far from ready</b>).
 
 What sh.js isn't
 ----------------
 
--   sh.js isn't an interactive shell (unfortunately, for now). You need to write some Javascript in a file, and run it with node.js
+-   sh.js isn't an interactive shell (unfortunately, for now). You need to write some JavaScript in a file, and run it with node.js
 -   sh.js isn't a command interpreter. It doesn't interpret a language. However, it is a library to experiment an alternative to command interpreters such as Bash.
 
 Examples
@@ -48,14 +48,14 @@ Report the space availability of the root partition to the remote `monitor.lan` 
         sh('curl -d root="' + available + '" https://monitor.lan/disk_report');
       });
 
-You'll find a tutorial below. You may also look at the `example` directory.
+You'll find a tutorial below. You may also look at the `examples` directory.
 
 Acknowledgements
 ----------------
 
-Special thanks to the [Jison](http://zaach.github.com/jison/) project. Jison is a powerful Javascript parser generator that sh.js uses, although in a very basic, clumsy fashion, to parse commands.
+Special thanks to the [Jison](http://zaach.github.com/jison/) project. Jison is a powerful JavaScript parser generator that sh.js uses, although in a very basic, clumsy fashion, to parse commands.
 
-Thanks to the [node.js](nodejs.org) project. Node.js uses Google's blazing-fast V8 Javascript virtual machine, adds APIs to interact with the operating system and is pleasant and fun to use.
+Thanks to the [node.js](nodejs.org) project. Node.js uses Google's blazing-fast V8 JavaScript virtual machine, adds APIs to interact with the operating system and is pleasant and fun to use.
 
 Limitations
 -----------
@@ -84,11 +84,12 @@ Before you start
 ----------------
 
 The following tutorial aims people who are at least novice at shell scripting and know their way in node.js. In particular, you should be familiar with:
+
 -   standard streams: standard input, output and error
 -   pipes: `ls / | grep etc`
 -   redirections: `find . -name "*.js" > results`
 -   exit statuses and operators such as `&&` or `||`
--   Javascript
+-   JavaScript
 -   `require`
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -313,7 +314,7 @@ Bash equivalent:
     test $status || echo compression failed
     test $status && echo compression succeeded
 
-`.and()`, `.or()` and `.then()` all accept functions as arguments, so you can run Javascript instead of a program:
+`.and()`, `.or()` and `.then()` all accept functions as arguments, so you can run JavaScript instead of a program:
 
     // ./14-callback.example.js
     
@@ -363,7 +364,7 @@ Finally, to unset a variable, just set it to `sh.UNSET`:
     .and.define('MY_VAR', sh.UNSET)
     .and('env')('grep MY_VAR');
 
-By the way, once you `cd` to a directory or set environment variable, you can store the shell in a Javascript variable, and reuse it later:
+By the way, once you `cd` to a directory or set environment variable, you can store the shell in a JavaScript variable, and reuse it later:
 
     // ./19-unset_my_var.example.js
     
@@ -386,7 +387,7 @@ I hope that will work soon.
 
 <b>Note</b>: the main challenge of making sh.js was to find the right syntax. Suggestions are welcome.
 
-On the one hand, a process has three standard streams and you may want to start several processes upon its exit. On the other hand, Javascript doesn't have lots of idioms to embed such syntax.
+On the one hand, a process has three standard streams and you may want to start several processes upon its exit. On the other hand, JavaScript doesn't have lots of idioms to embed such syntax.
 
 We're trying to reproduce the following Bash command (this uses process substitution which is not part of the standard):
 
@@ -394,7 +395,8 @@ We're trying to reproduce the following Bash command (this uses process substitu
       2> >( sed s/non_existent/NON_EXISTENT/ ) \
       > >( grep etc )
 
-So I've found four ways that I believe do make sense, three of which are implemented so far.
+So I've found four ways that I believe do make sense, three of which are implemented so far:
+
 -   chaining
 -   variables
 -   closures
@@ -415,8 +417,10 @@ If you want to pipe both stdout and stderr, you may use `.pipe()` and `.err()`:
     ls: ne peut accéder NON_EXISTENT_file: Aucun fichier ou dossier de ce type
 
 Pros:
--   chaining is probably as natural as you can get in Javascript.
+
+-   chaining is probably as natural as you can get in JavaScript.
 Cons:
+
 -   piping several levels of commands may feel awkward because `.pipe()` and `.err()` are a syntax of their own.
 
 #### 2. Variables
@@ -431,8 +435,11 @@ By declaring a variable, you can make several method calls on the first command:
     l.e('sed s/non_existent/NON_EXISTENT/');
 
 Pros:
--   variables are native to Javascript programmers
+
+-   variables are native to JavaScript programmers
+
 Cons:
+
 -   it quickly gets messy
 
 #### 3. Closures
@@ -447,8 +454,10 @@ Passing a closure after the command string will run it and identify the piping:
     });
     
 Pros:
+
 -   it doesn't clobber the variable namespace
 Cons:
+
 -   more syntactic noise
 -   it still feels messy
 
@@ -464,6 +473,7 @@ I thought of this one only recently, so I haven't implemented it yet, but I beli
     );
 
 Pros:
+
 -   no need for a throw-away variable
 -   nearly as natural as chaining
 -   will be very nice in [CoffeeScript](http://jashkenas.github.com/coffee-script/), except for the `sh.`:
@@ -473,11 +483,12 @@ Pros:
       sh.err 'sed s/non_existent/NON_EXISTENT/'
 
 Cons:
+
 -   there is still noise
 
 ### Random tricks
 
-#### cache result
+#### Cache result
 In Bash, you frequently use several variables before you run a command:
 
     var1=`echo hello`
