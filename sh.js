@@ -24,6 +24,9 @@ var
   AND = 'AND',
   OR = 'OR',
   
+  OUT = 'out',
+  ERR = 'err',
+  
   forEachDelimiter = new RegExp('\\s+(?!$)', 'g'),
   endOfStream = new RegExp('\\s*$');
 
@@ -515,9 +518,23 @@ function runCommand(c, status) {
 function linkCtor() {
   var parent = this.parentState;
   var that = this;
+  var prop = this.propertyName;
   //console.log('this link before:');
   //console.log(this);
-  if (parent && parent.workingCommand.type === TRANSIENT_TYPE) {
+  if (parent === undefined && prop !== 'cd'
+    && prop !== 'define' && prop !== undefined) {
+    // This case is for branches of commands passed as arguments:
+    // sh('cmd',
+    //   sh.out('cmd1')('cmd11'),
+    //   sh.or('cmd2')
+    // );
+    
+    this.workingCommand = {
+      env: defaultEnv,
+      cwd: defaultCwd
+    };
+    
+  } else if (parent && parent.workingCommand.type === TRANSIENT_TYPE) {
     // typically the parent is a .err, .e, .pipe or .out link
     // and in this step, the link is an invocation
     this.workingCommand = parent.workingCommand;
@@ -633,6 +650,7 @@ function getCacheCommands() {
 
 function plugWithParentStream(s) {
     var parent = this.parentState;
+
     throwIfParentCantStream.call(this);
     
     if (parent.workingCommand[s]) {
@@ -643,13 +661,22 @@ function plugWithParentStream(s) {
     parent.workingCommand[s] = this.workingCommand;
 }
 
+function getRoot(link) {
+  var parent = link(STATE_ACCESSOR_TOKEN);
+  var i = 100;
+  while (parent.parentState && i--) {
+    parent = parent.parentState;
+  }
+  return parent;
+}
+
 function mainGet() {
   var
     parent = this.parentState,
     command = this.workingCommand;
   
   switch (this.propertyName) {
-  case 'pipe':
+  case 'pipe'://DEPRECATED
   
     throwIfNoParent.call(this);
     throwIfParentCantStream.call(this);
@@ -667,12 +694,12 @@ function mainGet() {
     
     break;
   case 'out':
-  
-    throwIfNoParent.call(this);
     
-    if (parent.workingCommand.out === command) {
-      // we're all set
-    } else {
+    if (parent === undefined)
+      // this is a branch meant to be an argument, the parent is supposed to
+      // plug to this command when processing arguments
+      command.stream = OUT;
+    else if (parent.workingCommand.out !== command) {
       var ancestor = parent;
       while(true) {
       
@@ -701,9 +728,12 @@ function mainGet() {
   case 'err':
     //console.log('getting err');
     //console.log(this);
-    throwIfNoParent.call(this);
     
-    if (parent.workingCommand.out === command) {
+    if (parent === undefined) {
+      // this is a branch meant to be an argument, the parent is supposed to
+      // plug to this command when processing arguments
+      command.stream = ERR;
+    } else if (parent.workingCommand.out === command) {
       // pipe has plugged this command to the parent's output,
       // we need to reverse it
       parent.workingCommand.out = null;
@@ -735,7 +765,7 @@ function mainGet() {
     command.type = TRANSIENT_TYPE;
     
     break;
-  case 'e':
+  case 'e'://DEPRECATED
   
     throwIfNoParent.call(this);
     throwIfParentCantStream.call(this);
@@ -755,7 +785,8 @@ function mainGet() {
     command.condition = AND;
     command.branches = [];
     command.type = FORK_TYPE;
-    addExit.call(this);
+    if (parent)
+      addExit.call(this);
     
     break;
   case 'or':
@@ -763,7 +794,8 @@ function mainGet() {
     command.condition = OR;
     command.branches = [];
     command.type = FORK_TYPE;
-    addExit.call(this);
+    if (parent)
+      addExit.call(this);
     
     break;
   case 'then':
@@ -771,11 +803,11 @@ function mainGet() {
     command.condition = THEN;
     command.branches = [];
     command.type = FORK_TYPE;
-    addExit.call(this);
+    if (parent)
+      addExit.call(this);
     
     break;
   case 'cache':
-  
     // plug the command with the direct parent
     // if it hasn't been plugged already
     if (command.type !== TRANSIENT_TYPE)
@@ -863,13 +895,16 @@ function EnvCommand(arg0, arg1) {
 function FileCommand(arg0, arg1) {
   var
     prop = this.propertyName,
-    command = this.workingCommand;
-  
-  throwIfNoParent.call(this);
+    command = this.workingCommand,
+    parent = this.parentState;
 
-  // plug the command with the direct parent
-  // if it hasn't been plugged already
-  if (command.type !== TRANSIENT_TYPE)
+  if (parent === undefined) {
+    if (! command.stream)
+      command.stream = OUT;
+
+  } else if (command.type !== TRANSIENT_TYPE)
+    // plug the command with the direct parent
+    // if it hasn't been plugged already
     plugWithParentStream.call(this, 'out');
 
   if (typeof arg0 === 'string') {
@@ -898,7 +933,9 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
   var
     prop = this.propertyName,
     command = this.workingCommand,
-    parent = this.parentState;
+    parent = this.parentState,
+    proto = sh.__proto__;
+
   if (parent) {
     var 
       parentCommand = parent.workingCommand;
@@ -922,7 +959,11 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
     }
 
   } else {
-    // we're at the root
+    // We're at the root. We may be a branch argument so set the stream to OUT
+    // if it's not ERR. If we not a branch argument, their is no reason yet why
+    // this is going to be a problem to have a stream property.
+    if (! command.stream)
+      command.stream = OUT;
   }
 
   if (typeof arg0 === 'string' || arg0 instanceof Array) {
@@ -944,9 +985,13 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
     // closureNumber takes note of which typeof === 'function' is true
     // so we know which argument to call
     var closureNumber = -1;
-    if ((typeof arg1 === 'function' && (closureNumber = 1))
-      || (typeof arg2 === 'function' && (closureNumber = 2))
-      || (typeof arg3 === 'function' && (closureNumber = 3))) {
+    if ((typeof arg1 === 'function' && arg1.__proto__ !== proto
+      && (closureNumber = 1))
+      || (typeof arg2 === 'function' && arg2.__proto__ !== proto
+      && (closureNumber = 2))
+      || (typeof arg3 === 'function' && arg3.__proto__ !== proto
+      && (closureNumber = 3))) {
+      
       if (this.parentState) {
         var hiddenParent = this.parentState;
         delete this.parentState;
@@ -989,6 +1034,36 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
   } else
     throw new Error('todo');
 
+  
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    var argi = arguments[i];
+    
+    if (typeof argi !== 'function' || argi.__proto__ !== proto)
+      continue;
+    
+    var root = getRoot(argi).workingCommand;
+    
+    switch(root.type) {
+    case FORK_TYPE:
+      command.exit.push(root);
+      break;
+    case PATH_TYPE:
+    case FD_TYPE:
+    case CACHE_TYPE:
+    case CMD_TYPE:
+      if (root.stream === OUT)
+        command.out = root;
+      else if (root.stream === ERR)
+        command.err = root;
+      else
+        throw new Error('internal error: stream property is: ' + root.stream);
+
+      break;
+    default:
+      throw new Error('bad syntax');
+    }
+  }
+  
   //console.log('GenericCommand:');
   //console.log(this);
 
@@ -1027,13 +1102,16 @@ function EachCommand(arg0) {
 
 function ResultCommand(arg0) {
   var
-    command = this.workingCommand;
+    command = this.workingCommand,
+    parent = this.parentState;
   
-  throwIfNoParent.call(this);
+  if (parent === undefined) {
+    if (! command.stream)
+      command.stream = OUT;
 
-  // plug the command with the direct parent
-  // if it hasn't been plugged already
-  if (command.type !== TRANSIENT_TYPE)
+  } else if (command.type !== TRANSIENT_TYPE)
+    // plug the command with the direct parent
+    // if it hasn't been plugged already
     plugWithParentStream.call(this, 'out');
   
   var cacheCommands = getCacheCommands.call(this);
@@ -1076,6 +1154,8 @@ function ResultCommand(arg0) {
     throw new Error('bad syntax: result only takes a function as its arguments; '
       + typeof arg0 + ' given');
 }
+
+STATE_ACCESSOR_TOKEN = ['private token to access the state of a link'];
 
 var def = {
   invoke: GenericCommand,
@@ -1133,6 +1213,7 @@ var def = {
     },
   },
   linkCtor: linkCtor,
+  STATE_ACCESSOR_TOKEN: STATE_ACCESSOR_TOKEN
 };
 
 var sh = linkjs.makeLib(def);

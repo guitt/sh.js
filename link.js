@@ -84,7 +84,7 @@ function makePrototype(hookSet, getter, setter) {
  *  parentState: the state object of the parent link
  *  libState: the state object of the library
  */
-function makeLinkState(parentState, ctor, libState) {
+function makeLinkState(parentState, ctor, libState, prop) {
   var linkState;
   
   if (!parentState && libState) {
@@ -100,9 +100,15 @@ function makeLinkState(parentState, ctor, libState) {
   } else 
     throw new TypeError("bad arguments: " + parentState + "; " + libState);
   
-  if (ctor)
+  if (ctor) {
+    // Put the property name that we're getting so the library doesn't need
+    // to figure it out.
+    if (prop)
+      linkState.propertyName = prop;
+
     ctor.apply(linkState)
-  
+  }
+    
   return linkState;
 }
 /*
@@ -161,7 +167,7 @@ function getterHook(prop) {
     } else if (s2.def.properties && s2.def.properties[prop]) {
       property = s2.def.properties[prop];
       
-      state = makeLinkState(null, s2.linkCtor, s1);
+      state = makeLinkState(null, s2.linkCtor, s1, prop);
       hiddenState = makeLinkState(null, null, s2);
       
     } else
@@ -177,15 +183,13 @@ function getterHook(prop) {
       // get the property of name "prop" from the resolved API
       property = api.properties[prop]
     
-    state = makeLinkState(parentState, parentHiddenState.libState.linkCtor);
+    state = makeLinkState(parentState, parentHiddenState.libState.linkCtor,
+      undefined, prop);
     hiddenState = makeLinkState(parentHiddenState);
 
   } else
     console.log("missing a state:", states);
     
-  // put the property name that we're getting so the library doesn't need
-  // to figure it out
-  state.propertyName = prop;
   state.api = makeAPI(state, hiddenState);
   
   if (typeof property.get === "function" 
@@ -220,12 +224,18 @@ function setterHook(prop, value) {
   throw new Error("todo");
 }
 function makeAPI(linkState, linkHiddenState) {
-  function ret() {
+  function ret(arg0) {
     // This allows the getter and the setter to access the states
     // by calling "this(ACCESSOR_TOKEN)"
-    if (arguments[0] === ACCESSOR_TOKEN) {
+    if (arg0 === ACCESSOR_TOKEN) {
       return [null, linkState, linkHiddenState];
     }
+    
+    // Give the library a back door to get the state from this API
+    if (linkHiddenState.libState && linkHiddenState.libState.STATE_ACCESSOR_TOKEN
+      && arg0 === linkHiddenState.libState.STATE_ACCESSOR_TOKEN)
+      return linkState;
+    
     var parentState = linkState,
       parentHiddenState = linkHiddenState,
       invokeFunction,
@@ -302,6 +312,9 @@ function makeLib(def) {
     proto = makePrototype(hookSet, getterHook, setterHook),
     libState = {},
     libHiddenState = {def:def, proto:proto};
+  
+  if (def.STATE_ACCESSOR_TOKEN)
+    libHiddenState.STATE_ACCESSOR_TOKEN = def.STATE_ACCESSOR_TOKEN;
     
   if (typeof def.libCtor === "function")
     // allows the library to have instances
