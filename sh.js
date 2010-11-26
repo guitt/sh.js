@@ -87,9 +87,35 @@ WorkingDir.prototype = {
   }
 }
 
+function WorkingEnv(arg0) {
+  if (arg0 instanceof WorkingEnv)
+    this.previousEnv = arg0;
+  else if (typeof arg0 === 'object') {
+    this.vars = copyEnv(arg0);
+  } else {
+    console.log(arg0);
+    throw new Error('internal error: bad argument for WorkingEnv, got:' + arg0);
+  }
+}
+
+WorkingEnv.prototype = {
+  getEnv: function() {
+    var pEnv = this;
+    while (pEnv) {
+      if (pEnv.vars) {
+        return pEnv.vars;
+      }
+      pEnv = pEnv.previousEnv;
+    }
+    
+    throw new Error('this WorkingEnv has neither vars nor a previousEnv which'
+      + ' has some');
+  }
+}
+
 var
   defaultCwd = new WorkingDir(process.cwd());
-  defaultEnv = process.env;
+  defaultEnv = new WorkingEnv(process.env);
 
 /*
  *  Check the type provided is consistent with the property name.
@@ -435,7 +461,7 @@ Program.prototype = {
     var executable = argv.shift();
     var options = {
       customFds: this.customFds,
-      env: this.cmd.env,
+      env: this.cmd.env.getEnv(),
       cwd: this.cmd.cwd.getPath(),
       closeFds: true,
     };
@@ -500,9 +526,49 @@ function runCommand(c, status) {
         }
       });
       
-    } else
-      runExitCommands(c, 0);
+    } else if (c.args) {
+      var
+        args = c.args,
+        arg0 = args[0],
+        arg1 = args[1];
+        
+      if (arg0 === sh.ENV && typeof arg1 === 'object')
+        c.env.vars = copyEnv(arg1);
+      else {
+        var vars = c.env.vars = copyEnv(c.env.getEnv());
+          
+        if (typeof arg0 === 'string' && arg1 === sh.UNSET) {
+          delete vars[arg0];
+          
+        } else if (typeof arg0 === 'object') {
+          var count = 0, arg;
+          
+          for (var i in arg0) {
+            count++;
+            arg = arg0[i];
+            
+            if (arg === sh.UNSET)
+              delete vars[i];
+            else
+              vars[i] = arg.toString();
+          }
+          
+          if (count === 0)
+            throw new Error('bad argument: the argument has no (enumerable) '
+              + 'properties');
+            
+        } else if (typeof arg0 === 'string') {
+          vars[arg0] = arg1.toString();
+          
+        } else
+          throw new Error('bad argument: .define() got: (' + arg0 + ', ' + arg1
+            + ')');
+      }
       
+      runExitCommands(c, 0);
+    } else
+      throw new Error('internal error: neither a .cd(), nor a .define()');
+    
     break;
   case FORK_TYPE:
     var b = c.branches;
@@ -542,7 +608,7 @@ function linkCtor() {
     // );
     
     this.workingCommand = {
-      env: defaultEnv,
+      env: new WorkingEnv(defaultEnv),
       cwd: new WorkingDir(defaultCwd)
     };
     
@@ -589,7 +655,7 @@ function linkCtor() {
       this.workingCommand = {
         // To ease debugging, the sh.EMPTY_ENV may be set so the environment
         // doesn't clutter the console
-        env: sh.EMPTY_ENV ? {} : defaultEnv,
+        env: sh.EMPTY_ENV ? new WorkingEnv({}) : defaultEnv,
         cwd: defaultCwd
       };
       
@@ -867,40 +933,8 @@ function EnvCommand(arg0, arg1) {
       throw new Error('bad syntax: cd takes a string as its first argument');
   
   else if (prop === 'define') {
-    
-    if (arg0 === sh.ENV && typeof arg1 === 'object')
-      command.env = copyEnv(arg1);
-    else {
-      var newEnv = copyEnv(command.env);
-        
-      if (typeof arg0 === 'string' && arg1 === sh.UNSET) {
-        delete newEnv[arg0];
-        
-      } else if (typeof arg0 === 'object') {
-        var count = 0, arg;
-        
-        for (var i in arg0) {
-          count++;
-          arg = arg0[i];
-          
-          if (arg === sh.UNSET)
-            delete newEnv[i];
-          else
-            newEnv[i] = arg.toString();
-        }
-        
-        if (count === 0)
-          throw new Error('bad argument: the argument has no (enumerable) '
-            + 'properties');
-          
-      } else if (typeof arg0 === 'string') {
-        newEnv[arg0] = arg1.toString();
-        
-      } else 
-        throw new Error('bad argument: .define() got: (' + arg0 + ', ' + arg1
-          + ')');
-      command.env = newEnv;
-    }
+    command.env = new WorkingEnv(command.env);
+    command.args = arguments;
   }
 }
 
@@ -1058,6 +1092,7 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
     // Put our working directory at the root of this branch so children will
     // us ours
     root.cwd.previousDir = command.cwd;
+    root.env.previousEnv = command.env;
     
     switch(root.type) {
     case FORK_TYPE:
