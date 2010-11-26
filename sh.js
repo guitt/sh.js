@@ -72,6 +72,18 @@ WorkingDir.prototype = {
         throw new Error('internal error: got error' + err);
     });
     
+  },
+  
+  getPath: function() {
+    var pDir = this;
+    while (pDir) {
+      if (pDir.path)
+        return pDir.path;
+      pDir = pDir.previousDir;
+    }
+    
+    throw new Error('this WorkingDir has neither a path nor a previousDir which'
+      + ' has one');
   }
 }
 
@@ -178,7 +190,7 @@ function plug(s) {
       var path = c[s].path;
       if (path.charAt(0) !== '/')
         // the path is relative, join it with the current directory
-        path = joinPaths(c[s].cwd.path, path);
+        path = joinPaths(c[s].cwd.getPath(), path);
       
       fs.open(path, flags, process.umask, function(err, fd) {
         if (err) {
@@ -424,7 +436,7 @@ Program.prototype = {
     var options = {
       customFds: this.customFds,
       env: this.cmd.env,
-      cwd: this.cmd.cwd.path,
+      cwd: this.cmd.cwd.getPath(),
       closeFds: true,
     };
     //console.log(executable, argv);
@@ -464,7 +476,7 @@ function runCommand(c, status) {
       if (c.nextDir[0] === '/')
         c.cwd.path = c.nextDir;
       else
-        c.cwd.path = joinPaths(c.cwd.previousDir.path, c.nextDir);
+        c.cwd.path = joinPaths(c.cwd.previousDir.getPath(), c.nextDir);
       //console.log('checking new cwd:', c.cwd);
       c.cwd.check(function(st) {
         //console.log('checked new cwd:'); console.log(c.cwd);
@@ -479,7 +491,7 @@ function runCommand(c, status) {
           
           break;
         case 2:
-          console.log('.cd(): no such directory: ', c.cwd.path);
+          console.log('.cd(): no such directory: ', c.cwd.getPath());
           runExitCommands(c, 1);
           
           break;
@@ -531,7 +543,7 @@ function linkCtor() {
     
     this.workingCommand = {
       env: defaultEnv,
-      cwd: defaultCwd
+      cwd: new WorkingDir(defaultCwd)
     };
     
   } else if (parent && parent.workingCommand.type === TRANSIENT_TYPE) {
@@ -1042,6 +1054,10 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
       continue;
     
     var root = getRoot(argi).workingCommand;
+    
+    // Put our working directory at the root of this branch so children will
+    // us ours
+    root.cwd.previousDir = command.cwd;
     
     switch(root.type) {
     case FORK_TYPE:
