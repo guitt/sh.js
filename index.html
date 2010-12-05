@@ -68,11 +68,7 @@
 <p>In a Git repository, put all authors with their email in a file:</p>
 
 <div class="highlight"><pre class="line_nums">&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;</pre><pre><code><span class="c1">// examples/authors.example.js</span>
-
-<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;git log --pretty=format:&quot;%aN %aE&quot;&#39;</span><span class="p">)</span>
+&nbsp;</pre><pre><code><span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;git log --pretty=format:&quot;%aN %aE&quot;&#39;</span><span class="p">)</span>
 <span class="p">(</span><span class="s1">&#39;uniq&#39;</span><span class="p">)(</span><span class="s1">&#39;sort&#39;</span><span class="p">).</span><span class="nx">file</span><span class="p">(</span><span class="s1">&#39;AUTHORS&#39;</span><span class="p">);</span>
 </code></pre></div>
 
