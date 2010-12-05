@@ -1,0 +1,32 @@
+License
+=======
+
+This work is Copyright 2010 Guillaume Tuton.
+
+This documentation is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/" style="border: 0;">
+  <img alt="Creative Commons License" style="border-width:0;" src="cc-by-sa.png" /></a>
+
+Any copyright on the examples is dedicated to the public domain.
+
+<a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/" style="border: 0;">
+  <img src="cc-zero.png" style="border: 0;" alt="Creative Commons Zero" />
+</a>
+
+Other files, including the source code, are licensed under the terms of the LGPL.
+
+<a rel="license" href="http://www.gnu.org/licenses/lgpl.html" style="border: 0;"><img alt="Lesser General Public License" style="border-width:0;" src="lgplv3.png" /></a>
+    
+sh.js is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>

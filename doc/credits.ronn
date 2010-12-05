@@ -1,0 +1,12 @@
+Acknowledgements
+================
+
+Special thanks to the [Jison](http://zaach.github.com/jison/) project. Jison is a powerful JavaScript parser generator that sh.js uses, although in a very basic, clumsy fashion, to parse commands.
+
+Thanks to the [node.js](http://nodejs.org) project. Node.js uses Google's blazing-fast V8 JavaScript virtual machine, adds APIs to interact with the operating system and is pleasant and fun to use.
+
+This documentation was written in [markdown](http://daringfireball.net/projects/markdown/), generated with [ronn](https://github.com/rtomayko/ronn), [python](http://www.python.org) and [pygments](http://pygments.org). The style sheet is written in [Sass](http://sass-lang.com).
+
+The logo and the documentation use the [Inconsolata font](http://www.levien.com/type/myfonts/inconsolata.html). The logo was made with [Inkscape](http://inkscape.org).
+
+The source code is managed with [git](http://git-scm.com). The project and the documentation are hosted by [github](https://github.com).

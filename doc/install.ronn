@@ -1,0 +1,19 @@
+Installation
+============
+
+<em>sh.js has only been tested on Ubuntu 10.10 64 bit</em>. Node.js supports other platforms, so you may give it a shot.
+
+sh.js <b>requires</b> [node.js](http://nodejs.org) to function.
+
+I will be working on an [npm](https://github.com/isaacs/npm) installation. In the meantime, you'll have to clone the repository with git:
+
+    ///pygments:bash
+    git clone https://github.com/guitt/sh.js.git
+
+and use `require` with a path in your script:
+
+    ///pygments:javascript
+    var sh = require('/path/to/shjs/sh.js').sh;
+    sh('echo hello');
+
+You may go to the `test` directory and run `./run_tests.sh` to make sure it's worthwhile going on.

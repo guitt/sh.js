@@ -1,0 +1,66 @@
+What is sh.js?
+==============
+
+sh.js is a JavaScript <b>library</b> for Unix shell scripting working on [node.js](http://nodejs.org).
+
+For example, to sort user names in `/etc/passwd` in a classical shell script, you could write:
+
+    ///pygments:bash
+    cut -f1 -d: /etc/passwd | sort
+
+With sh.js, the following statement would accomplish the same:
+
+    ///pygments:javascript
+    sh('cut -f1 -d: /etc/passwd')('sort');
+
+Why try it?
+-----------
+
+You may find sh.js useful if:
+
+-   you use node.js and you want a high-level, prototyping-friendly API to use Unix utilities from JavaScript.
+-   you would like to try shell scripting in a different language than Bourne's (<b>disclaimer: sh.js is far from ready</b>).
+
+What sh.js isn't
+----------------
+
+-   sh.js isn't an interactive shell (unfortunately, for now). You need to write some JavaScript in a file, and run it with node.js
+-   sh.js isn't a command interpreter. However, it is a small internal <abbr title="Domain Specific Language">DSL</abbr> to experiment an alternative to command interpreters such as Bash.
+
+Examples
+--------
+
+Run a command:
+
+    ///pygments:javascript
+    sh('echo hello');
+
+Change the working directory and run a command in the new directory:
+
+    ///pygments:javascript
+    sh.cd('/').and('ls -l');
+
+In a Git repository, put all authors with their email in a file:
+
+    ///pygments:javascript
+    ///file:examples/authors.example.js:5
+    
+Report the space availability of the root partition to the remote `monitor.lan` server:
+
+    ///pygments:javascript
+    sh('df')('awk \'{ if ($6 == "/") printf "%s", $5 }\'')
+      .result(function(available) {
+        sh('curl -d root="' + available + '" https://monitor.lan/disk_report');
+      });
+
+For more examples, head to the [tutorial](tutorial.html).
+
+Limitations
+-----------
+
+As of now, sh.js still has some serious limitations:
+
+-   Node's `Stream`s are not supported. You can't easily redirect standard output to an HTTP stream for instance. This is likely to be resolved.
+-   sh.js from an interactive command line is not usable. You can try it, but it'll be a pain. sh.js is better suited to be used in scripts for now. This is not very likely to be worked out any time soon.
+-   There is a lack of features such as easy file and directory manipulation. This would be a great niche for a library.
+-   sh.js is not extensible at all for now. It would be nice to have plugins adding high-level APIs abstracting some Unix commands. This seems quite feasible.

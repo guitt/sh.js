@@ -2,4 +2,5 @@
 
 var sh = require('../sh.js').sh;
 
-sh('ls')('grep \\.example\\.js$');
+var f = sh('ls');
+f('grep \\.example\\.js$');
