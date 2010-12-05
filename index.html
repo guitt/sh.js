@@ -1,1 +1,113 @@
-My GitHub Page
+<!DOCTYPE html>
+<html manifest="doc.manifest">
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>What is sh.js?</title>
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <link href='https://fonts.googleapis.com/css?family=Inconsolata&subset=latin' rel='stylesheet' type='text/css'>
+  <link rel="icon" type="image/png" href="icon.png">
+</head>
+<body id='manpage'>
+<div id=nav>
+<img src='logo.png' id='logo' />
+<a href=".">Intro</a>
+<a href="install.html">Install</a>
+<a href="tutorial.html">Tutorial</a>
+<a href="credits.html">Credits</a>
+<a href="license.html">License</a>
+</div>
+<div class='mp'>
+<h1>What is sh.js?</h1>
+<p>sh.js is a JavaScript <b>library</b> for Unix shell scripting working on <a href="http://nodejs.org">node.js</a>.</p>
+
+<p>For example, to sort user names in <code>/etc/passwd</code> in a classical shell script, you could write:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code>cut -f1 -d: /etc/passwd | sort
+</code></pre></div>
+
+
+<p>With sh.js, the following statement would accomplish the same:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code><span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;cut -f1 -d: /etc/passwd&#39;</span><span class="p">)(</span><span class="s1">&#39;sort&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+
+<h2 id="Why-try-it-">Why try it?</h2>
+
+<p>You may find sh.js useful if:</p>
+
+<ul>
+<li>you use node.js and you want a high-level, prototyping-friendly API to use Unix utilities from JavaScript.</li>
+<li>you would like to try shell scripting in a different language than Bourne's (<b>disclaimer: sh.js is far from ready</b>).</li>
+</ul>
+
+
+<h2 id="What-sh-js-isn-t">What sh.js isn't</h2>
+
+<ul>
+<li>sh.js isn't an interactive shell (unfortunately, for now). You need to write some JavaScript in a file, and run it with node.js</li>
+<li>sh.js isn't a command interpreter. However, it is a small internal <abbr title="Domain Specific Language">DSL</abbr> to experiment an alternative to command interpreters such as Bash.</li>
+</ul>
+
+
+<h2 id="Examples">Examples</h2>
+
+<p>Run a command:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code><span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;echo hello&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+
+<p>Change the working directory and run a command in the new directory:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code><span class="nx">sh</span><span class="p">.</span><span class="nx">cd</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">).</span><span class="nx">and</span><span class="p">(</span><span class="s1">&#39;ls -l&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+
+<p>In a Git repository, put all authors with their email in a file:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;</pre><pre><code><span class="c1">// examples/authors.example.js</span>
+
+<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;git log --pretty=format:&quot;%aN %aE&quot;&#39;</span><span class="p">)</span>
+<span class="p">(</span><span class="s1">&#39;uniq&#39;</span><span class="p">)(</span><span class="s1">&#39;sort&#39;</span><span class="p">).</span><span class="nx">file</span><span class="p">(</span><span class="s1">&#39;AUTHORS&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+
+<p>Report the space availability of the root partition to the remote <code>monitor.lan</code> server:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;</pre><pre><code><span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;df&#39;</span><span class="p">)(</span><span class="s1">&#39;awk \&#39;{ if ($6 == &quot;/&quot;) printf &quot;%s&quot;, $5 }\&#39;&#39;</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">available</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;curl -d root=&quot;&#39;</span> <span class="o">+</span> <span class="nx">available</span> <span class="o">+</span> <span class="s1">&#39;&quot; https://monitor.lan/disk_report&#39;</span><span class="p">);</span>
+  <span class="p">});</span>
+</code></pre></div>
+
+
+<p>For more examples, head to the <a href="tutorial.html">tutorial</a>.</p>
+
+<h2 id="Limitations">Limitations</h2>
+
+<p>As of now, sh.js still has some serious limitations:</p>
+
+<ul>
+<li>Node's <code>Stream</code>s are not supported. You can't easily redirect standard output to an HTTP stream for instance. This is likely to be resolved.</li>
+<li>sh.js from an interactive command line is not usable. You can try it, but it'll be a pain. sh.js is better suited to be used in scripts for now. This is not very likely to be worked out any time soon.</li>
+<li>There is a lack of features such as easy file and directory manipulation. This would be a great niche for a library.</li>
+<li>sh.js is not extensible at all for now. It would be nice to have plugins adding high-level APIs abstracting some Unix commands. This seems quite feasible.</li>
+</ul>
+
+
+</div>
+<div id=footer>Copyright 2010 Guillaume Tuton, some rights reserved.
+<br>This documentation is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+<br>Any copyright on the examples is dedicated to the public domain.
+<br>sh.js is free software licensed under the <a rel="license" href="http://www.gnu.org/licenses/lgpl.html">GNU Lesser General Public License</a>.
+</div>
+</body>
+</html>
