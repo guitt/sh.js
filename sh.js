@@ -18,7 +18,7 @@ var
   PATH_TYPE = 'PATH_TYPE',
   TRANSIENT_TYPE = 'TRANSIENT_TYPE',
   
-  MAX_CACHE_SIZE = 2 * 1 << 20;
+  MAX_CACHE_SIZE = 2 * 1 << 20,
   
   THEN = 'THEN',
   AND = 'AND',
@@ -27,8 +27,7 @@ var
   OUT = 'out',
   ERR = 'err',
   
-  forEachDelimiter = new RegExp('\\s+(?!$)', 'g'),
-  endOfStream = new RegExp('\\s*$');
+  forEachDelimiter = new RegExp('\\s+', 'g');
 
 function WorkingDir(arg0) {
   if (arg0 instanceof WorkingDir)
@@ -378,23 +377,20 @@ function listen() {
         
       p['std'+s].on('data', function(data) {
         input += data.toString('utf8', 0, data.length);
-        var args = input.split(forEachDelimiter);
-        while (args.hasOwnProperty(1)) {
-          callback(args.shift());
-        }
-        input = args[0];
       });
       
       p.on('exit', function() {
-        var repl = input.replace(endOfStream, '');
-        if (input.length === 0) {
-          // the process did not output anything, by convention, the exit
-          // status is 1
-          runExitCommands(cmd[s], 1);
-          return;
+        var args = input.split(forEachDelimiter);
+        
+        for (var i = 0, l = args.length; i < l; i++) {
+          if (args[i] === '')
+            continue;
+          callback(args[i]);
         }
-        callback(repl);
-        // Regular situtation, therefore, the exit status is set to 0
+        
+        // The standard says we should return the status of the last command of
+        // the loop, or 0 if there were no items. Since .each() only runs
+        // function callbacks, not shell commands, we'll always return 0
         runExitCommands(cmd[s], 0);
       });
       
