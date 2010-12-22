@@ -13,10 +13,9 @@ process.on('exit', function() {
   });
 });
 
-sh('ls . nxfile')
-  .pipe.err.file('/dev/null')
-  
-  .out('grep test').each(function(arg) {
+sh('ls . nxfile',
+  sh.err.file('/dev/null')
+).out('grep test').each(function(arg) {
   
     hasRun[0] = true;
     assert.ok(arg.indexOf('test') > 0, 'we get grep\'s output');

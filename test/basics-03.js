@@ -2,6 +2,7 @@
 
 var sh = require('../sh.js').sh;
 
-sh('ls / nxfile')
-  .file('/dev/null')
-  .err('sed s/nx/NX/');
+sh('ls / nxfile',
+  sh.file('/dev/null'),
+  sh.err('sed s/nx/NX/')
+)

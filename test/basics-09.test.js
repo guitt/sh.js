@@ -16,7 +16,9 @@ process.on('exit', function() {
  * here we mainly test a closure as a second argument, and check the resulting
  * plumbing
  */
-sh('ls . nxfile').pipe('sed s/test/TTEESSTT/', function(c) {
+var ls = sh('ls . nxfile');
+
+ls.out('sed s/test/TTEESSTT/', function(c) {
   hasRun[0] = true;
   
   c.out.result(function(arg) {
@@ -31,7 +33,9 @@ sh('ls . nxfile').pipe('sed s/test/TTEESSTT/', function(c) {
   c.and(function() {
     hasRun[2] = true;
   });
-}).err('sed s/nxfile/NXFILE/').result(function(arg) {
+});
+
+ls.err('sed s/nxfile/NXFILE/').result(function(arg) {
   hasRun[3] = true;
   assert.ok(arg.indexOf('NXFILE') > -1, 'we get the second sed\'s output');
 });;

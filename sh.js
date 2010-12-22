@@ -181,10 +181,7 @@ function plug(s) {
   
   var c = this.cmd,
     that = this;
-  if (c[s] === null) {
-    // here, it likely is the case that the user got .pipe on a command
-    // without redirecting both standard streams, so we just ignore it
-  } else if (typeof c[s] === 'object') {
+  if (typeof c[s] === 'object') {
   
     switch(c[s].type) {
     case CMD_TYPE:
@@ -750,23 +747,6 @@ function mainGet() {
     command = this.workingCommand;
   
   switch (this.propertyName) {
-  case 'pipe'://DEPRECATED
-  
-    throwIfNoParent.call(this);
-    throwIfParentCantStream.call(this);
-    
-    var parentCommand = parent.workingCommand
-    if (parentCommand.out || parentCommand.err)
-      throw new Error('bad syntax: the upstream command is already plugged');
-
-    // By default, plug this command to the parent's output.
-    // If err is actually the next link, this must be reversed.
-    parentCommand.out = command;
-    parentCommand.err = null;
-    
-    command.type = TRANSIENT_TYPE;
-    
-    break;
   case 'out':
     
     if (parent === undefined)
@@ -807,12 +787,6 @@ function mainGet() {
       // this is a branch meant to be an argument, the parent is supposed to
       // plug to this command when processing arguments
       command.stream = ERR;
-    } else if (parent.workingCommand.out === command) {
-      // pipe has plugged this command to the parent's output,
-      // we need to reverse it
-      parent.workingCommand.out = null;
-      parent.workingCommand.err = command;
-      
     } else {
       var ancestor = parent;
       while(true) {
@@ -835,21 +809,6 @@ function mainGet() {
             + ' can be plugged with');
       }
     }
-    
-    command.type = TRANSIENT_TYPE;
-    
-    break;
-  case 'e'://DEPRECATED
-  
-    throwIfNoParent.call(this);
-    throwIfParentCantStream.call(this);
-    
-    if (parent.workingCommand.err) {
-      throw new Error('bad syntax: the parent command\'s error stream '
-        + 'is already plugged');
-    }
-    
-    parent.workingCommand.err = command;
     
     command.type = TRANSIENT_TYPE;
     
@@ -1225,10 +1184,6 @@ var def = {
     define: {
       invoke: EnvCommand,
     },
-    e: {
-      get: mainGet,
-      invoke: GenericCommand,
-    },
     each: {
       invoke: EachCommand,
     },
@@ -1244,10 +1199,6 @@ var def = {
       invoke: GenericCommand,
     },
     out: {
-      get: mainGet,
-      invoke: GenericCommand,
-    },
-    pipe: {
       get: mainGet,
       invoke: GenericCommand,
     },
