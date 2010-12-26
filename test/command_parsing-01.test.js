@@ -2,7 +2,7 @@
 
 var assert = require('assert');
 var util = require('util');
-var sh = require('../sh.js').sh;
+var sh = require('../sh.js');
 var parser = require('../sh.js')._internal.parser;
 
 

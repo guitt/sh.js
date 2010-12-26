@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-var sh = require('../sh.js').sh;
+var sh = require('../sh.js');
 var assert = require('assert');
 
 var hasRun = [false,false,false,false,false];

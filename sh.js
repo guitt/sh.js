@@ -162,7 +162,7 @@ function copyEnv(oldEnv) {
 
 /*
  *  Plug the output or error streams of a process by setting the right file
- *  descriptors that process will spawned with. For instance open Unix pipes
+ *  descriptors that process will be spawned with. For instance open Unix pipes
  *  to plug it with another process, or open a file to redirect the stream.
  */
 function plug(s) {
@@ -1215,7 +1215,7 @@ var def = {
 };
 
 var sh = linkjs.makeLib(def);
-exports.sh = sh;
+module.exports = sh;
 
 sh.UNSET = ['unset environment variable'];
 sh.ENV = ['define complete environment'];
@@ -1229,7 +1229,7 @@ var
     return sh;
   };
 
-exports._internal = {
+sh._internal = {
   runCommand: runCommand,
   parseCommand: parseCommand,
   parser: parser

@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-var sh = require('../sh.js').sh;
+var sh = require('../sh.js');
 
 sh('echo hello').file('./non_exitent_directory/phoney_file', function(err) {
   console.log('got the error!');
