@@ -60,3 +60,7 @@ FileList['doc/*.ronn'].each do |f|
   target = f.pathmap("build/%X.html")
   task manifest => target
 end
+
+task :test do
+  sh 'cd test && ./run_tests.sh'
+end
