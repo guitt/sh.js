@@ -12,33 +12,9 @@ task :docs => manifest
 
 directory 'build/doc'
 
-file manifest => [
+task manifest => [
   'build/doc',
-  'build/doc/main.css' ] do
-  
-  m = File.open(manifest, 'w')
-  
-  m.write("CACHE MANIFEST\n\n")
-  
-  FileList['build/doc/*'].each do |f|
-    if f == manifest
-      next
-    end
-    
-    h = Digest::MD5.hexdigest(File.read(f))
-    ff = f.sub(/^build\/doc\//, '')
-    
-    if ff == 'index.html'
-      ff = '.'
-    end
-    
-    m.write("\n\# #{h}\n#{ff}\n")
-  end
-  
-  # style sheet to cache the Inconsolata font
-  m.write("\nhttps://fonts.googleapis.com/css?family=Inconsolata&subset=latin")
-  
-end
+  'build/doc/main.css' ]
 
 # simply copy these
 [ 'build/doc/cc-by-sa.png', 'build/doc/cc-zero.png', 'build/doc/lgplv3.png' ].each do |t|
