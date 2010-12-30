@@ -17,11 +17,31 @@ The following tutorial aims people who are at least novice at shell scripting an
 -   `require`
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-<b>In a terminal, head to the `examples` directory, and run `./00-hello.example.js`</b>
+### `require`
+
+Depending on your [installation](./install.html), there are two ways you can `require` sh.js.
+
+#### 1. On npm installs
+
+If you installed with npm, simply require `sh`:
+
+    ///pygments:javascript
+    var sh = require('sh');
+    sh('echo hello');
+
+#### 2. On git installs
+
+If you installed with git, you need to require a path:
+
+    ///pygments:javascript
+    var sh = require('/path/to/shjs/sh');
+    sh('echo hello');
+
+### Introduction
 
 Examples in this tutorial may have a file name indicating you can run it in the `examples` directory.
 
-### Introduction
+<b>In a terminal, head to the `examples` directory, and run `./00-hello.example.js`</b>
 
 At its core, sh.js launches programs:
     
@@ -82,7 +102,7 @@ I hope you can see the pattern here: anywhere piping is syntactically correct, `
     sh('echo hello').result(function(output) { console.log(output); });
     //              ^^^^^^^^ as well as .result()
 
-Piping stderr is quite similar to stdout, you need to interleave `.e`:
+Piping stderr is quite similar to stdout, you need to interleave `.err`:
 
     ///pygments:javascript
     ///file:examples/06-pipe_err_to_null.example.js:5:link
@@ -147,7 +167,9 @@ Unlike in Bash, both dates are the same because calls to sh.js do not block. Bot
 Bash equivalent:
 
     ///pygments:bash
-    date & sleep 2 & date &
+    date &
+    sleep 2 &
+    date &
 
 If you want to run commands <b>sequentially</b>, use `.then()`:
 
@@ -248,12 +270,12 @@ You may also set several variables in one call:
 Finally, to unset a variable, just set it to `sh.UNSET`:
 
     ///pygments:javascript
-    ///file:examples/19-unset_my_var.example.js:5:link
+    ///file:examples/18-unset_my_var.example.js:5:link
 
 By the way, once you `cd` to a directory or set environment variable, you can store the shell in a JavaScript variable, and reuse it later:
 
     ///pygments:javascript
-    ///file:examples/18-unset_my_var.example.js:5:link
+    ///file:examples/19-store_shell.example.js:5:link
 
 Don't forget the `.and` however.
 
@@ -278,7 +300,18 @@ We're trying to reproduce the following Bash command (this uses process substitu
       2> >( sed s/non_existent/NON_EXISTENT/ ) \
       > >( grep etc )
 
-So I've found four ways that I believe do make sense, three of which are implemented so far:
+    # Output
+    # etc
+    # ls: ne peut accéder NON_EXISTENT_file: Aucun fichier ou dossier de ce type
+
+    # Note: everyone is more familiar with the following, but for the purpose of
+    # writing shell scripts in JavaScript, the syntax poses the same problems
+    # as above:
+    
+    ls / non_existent_file > out_stream 2> err_stream
+    
+
+So I've found four ways that I believe do make sense, three of which are implemented, the other one being removed from the code:
 
 -   chaining
 -   variables
@@ -287,47 +320,41 @@ So I've found four ways that I believe do make sense, three of which are impleme
 
 #### 1. Chaining
 
-If you want to pipe both stdout and stderr, you may use `.pipe()` and `.err()`:
+This syntax was removed. It looked like:
 
     ///pygments:javascript
-    ///file:examples/20-chaining_pipes.example.js:5:link
+    // This was remove, it won't work
+    sh('ls / non_existent_file')
+      .pipe('grep etc')
+      .err('sed s/non_existent/NON_EXISTENT/');
 
-    // Output
-    // etc
-    // ls: ne peut accéder NON_EXISTENT_file: Aucun fichier ou dossier de ce type
-
-Pros:
-
--   chaining is probably as natural as you can get in JavaScript.
-Cons:
-
--   piping several levels of commands may feel awkward because `.pipe()` and `.err()` are a syntax of their own.
+The reason this was removed is I found it too complicated when there is a lot of recursion. It felt awkward because `.pipe()` and `.err()` are a syntax of their own.
 
 #### 2. Variables
 
 By declaring a variable, you can make several method calls on the first command:
 
     ///pygments:javascript
-    ///file:examples/21-pipes_with_variables.example.js:5:link
+    ///file:examples/20-pipes_with_variables.example.js:5:link
 
 Pros:
 
--   variables are native to JavaScript programmers
+-   variables are native to JavaScript
 
 Cons:
 
 -   it quickly gets messy
 
-#### 3. Closures
+#### 3. Closures (THIS IS SUBJECT TO CHANGES)
 
 Passing a closure after the command string will run it and identify the piping:
 
     ///pygments:javascript
-    ///file:examples/22-pipes_in_closures.example.js:5:link
+    ///file:examples/21-pipes_in_closures.example.js:5:link
     
 Pros:
 
--   it doesn't clobber the variable namespace
+-   it doesn't clobber the variable namespace like above
 
 Cons:
 
@@ -336,21 +363,15 @@ Cons:
 
 #### 4. Arguments
 
-I thought of this one only recently, so I haven't implemented it yet, but I believe it's very feasible:
+In this syntax, you use one argument for each stream to tell the command how you want to pipe it
 
     ///pygments:javascript
-    // not implemented yet
-    
-    sh('ls / non_existent_file',
-      sh.out('grep etc'),
-      sh.err('sed s/non_existent/NON_EXISTENT/')
-    );
+    ///file:examples/22-branch_arguments.example.js:5:link
 
 Pros:
 
--   no need for a throw-away variable
--   nearly as natural as chaining
--   will be very nice in [CoffeeScript](http://jashkenas.github.com/coffee-script/), except for the `sh.`:
+-   rather clean syntax
+-   very nice in [CoffeeScript](http://jashkenas.github.com/coffee-script/), except for the `sh.`:
 
         ///pygments:coffeescript
         sh 'ls / non_existent_file',
@@ -361,25 +382,23 @@ Cons:
 
 -   there is still noise
 
-### Random tricks
+### Putting everything together
 
-#### Cache result
-In Bash, you frequently use several variables before you run a command:
-
-    ///pygments:bash
-    var1=`echo hello`
-    var2=`echo world`
-    var3=`echo and`
-    var4=`echo universe`
-    
-    echo $var1 $var2 $var3 $var4
-
-To avoid having too many recursive callbacks, sh.js has the `.cache` property:
+Of course, the idioms above are not mutally exclusive.
 
     ///pygments:javascript
-    ///file:examples/23-cache_result.example.js:5:link
+    ///file:examples/23-advanced.example.js:5:link
 
-`.cache` is hooked with a getter so sh.js interprets it as "cache the output of the previous command and give it back when I call `.result()`".
+Here we combine:
+
+-   piping standard output to a process line (4)
+-   redirecting standard error to `/dev/null` line (7)
+-   reacting to the exit status lines (5), (8), (9) and (13)
+-   arguments lines (4) and (5)
+-   a closure lines (6) througth (10)
+-   a variable line (13)
+
+### Random tricks
 
 #### Output Only
 

@@ -1,9 +1,7 @@
 #! /usr/bin/env node
 
-var sh = require('../sh.js').sh;
+var sh = require('../sh.js');
 
-var sh1 = sh.cd('/').and;
-var sh2 = sh.cd('/var').and;
-
-sh1('ls');
-sh2('ls');
+sh.define('MY_VAR', 123)
+.and.define('MY_VAR', sh.UNSET)
+.and('env')('grep MY_VAR');

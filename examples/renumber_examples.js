@@ -4,12 +4,12 @@
  This is not really an example but a script to rename examples according to their position in the tutorial.
  */
 
-var sh = require('../sh.js').sh;
+var sh = require('../sh.js');
 
 // references to examples in the tutorial should follow the format
 // ./XX-example_name.example.js
 // to be recognized
-var re = new RegExp('\\./\\d\\d-.+?\\.example\\.js(?=\n)', 'gm');
+var re = new RegExp('examples/\\d\\d-.+?\\.example\\.js', 'gm');
 var exRe = new RegExp('\\d\\d-.+$');
 var numRe = new RegExp('^\\d\\d');
 
@@ -24,10 +24,10 @@ function padNum(n) {
   throw new RangeError('n too big: ' + n);
 }
 
-// load the README
-sh('cat ../README.md').result(function(readme) {
+// load the tutorial
+sh('cat ../doc/tutorial.ronn').result(function(tutorial) {
   // look for references to examples
-  var examples = readme.match(re),
+  var examples = tutorial.match(re),
     changeMade = false;
   
   examples.forEach(function(ex, i) {
@@ -43,11 +43,11 @@ sh('cat ../README.md').result(function(readme) {
     console.log("renaming: %s   =>   %s", oldName, newName);
     
     sh('mv "' + oldName + '" "' + newName + '"');
-    readme = readme.replace(oldName, newName, 'gm');
+    tutorial = tutorial.replace(oldName, newName, 'gm');
   });
   
   if (changeMade)
-    sh(['echo', '-n', readme]).file('../README.md');
+    sh(['echo', '-n', tutorial]).file('../doc/tutorial.ronn');
   else
     console.log('no change was made');
 });

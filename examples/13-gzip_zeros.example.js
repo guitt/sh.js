@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-var sh = require('../sh.js').sh;
+var sh = require('../sh.js');
 
 var s = sh('dd if=/dev/zero count=10000 bs=50K')('gzip').file('zeros.gz');
 

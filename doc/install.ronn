@@ -5,15 +5,42 @@ Installation
 
 sh.js <b>requires</b> [node.js](http://nodejs.org) to function.
 
-I will be working on an [npm](https://github.com/isaacs/npm) installation. In the meantime, you'll have to clone the repository with git:
+### Installation with <abbr title="Node Package Manager">npm</abbr> (RECOMMENDED)
+
+If you have [npm](https://github.com/isaacs/npm/), you can install sh.js with:
+
+    ///pygments:bash
+    npm install sh
+
+A few weeks from now, you'll just have to run the following to update:
+
+    ///pygments:bash
+    npm update sh
+
+Then you can make sure everything is okay by running the unit tests (you need [rake](http://rubyrake.org/):
+
+    ///pygments:bash
+    npm test sh
+
+If it prints "All tests passed", you can head to the [tutorial](./tutorial.html). Otherwise, please report the issue on github.
+
+### Installation with git
+
+If you have [git](http://git-scm.com), you can clone the repository:
 
     ///pygments:bash
     git clone https://github.com/guitt/sh.js.git
 
-and use `require` with a path in your script:
+A few weeks from now, you'll just have to run the following to update:
 
-    ///pygments:javascript
-    var sh = require('/path/to/shjs/sh.js').sh;
-    sh('echo hello');
+    ///pygments:bash
+    git pull
 
-You may go to the `test` directory and run `./run_tests.sh` to make sure it's worthwhile going on.
+Now go to the directory and run the tests:
+
+    ///pygments:bash
+    rake test                        # obviously you need rake
+    # or
+    cd test && ./run_tests.sh        # this only requires sh
+
+If it prints "All tests passed", you can head to the [tutorial](./tutorial.html). Otherwise, please report the issue on github.

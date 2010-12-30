@@ -60,7 +60,7 @@ Limitations
 
 As of now, sh.js still has some serious limitations:
 
--   Node's `Stream`s are not supported. You can't easily redirect standard output to an HTTP stream for instance. This is likely to be resolved.
+-   Node's `Stream`s are not supported. You can't easily redirect standard output to an HTTP stream for instance. This is likely to be resolved but I'm trying to figure out what the right API should be.
 -   sh.js from an interactive command line is not usable. You can try it, but it'll be a pain. sh.js is better suited to be used in scripts for now. This is not very likely to be worked out any time soon.
 -   There is a lack of features such as easy file and directory manipulation. This would be a great niche for a library.
 -   sh.js is not extensible at all for now. It would be nice to have plugins adding high-level APIs abstracting some Unix commands. This seems quite feasible.
