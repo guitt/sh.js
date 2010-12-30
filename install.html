@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
   <title>Installation</title>
   <link type="text/css" rel="stylesheet" href="main.css">
@@ -23,21 +23,53 @@
 
 <p>sh.js <b>requires</b> <a href="http://nodejs.org">node.js</a> to function.</p>
 
-<p>I will be working on an <a href="https://github.com/isaacs/npm">npm</a> installation. In the meantime, you'll have to clone the repository with git:</p>
+<h3 id="Installation-with-npm-RECOMMENDED-">Installation with <abbr title="Node Package Manager">npm</abbr> (RECOMMENDED)</h3>
+
+<p>If you have <a href="https://github.com/isaacs/npm/">npm</a>, you can install sh.js with:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code>npm install sh
+</code></pre></div>
+
+
+<p>A few weeks from now, you'll just have to run the following to update:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code>npm update sh
+</code></pre></div>
+
+
+<p>Then you can make sure everything is okay by running the unit tests (you need <a href="http://rubyrake.org/">rake</a>:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code>npm <span class="nb">test </span>sh
+</code></pre></div>
+
+
+<p>If it prints "All tests passed", you can head to the <a href="./tutorial.html">tutorial</a>. Otherwise, please report the issue on github.</p>
+
+<h3 id="Installation-with-git">Installation with git</h3>
+
+<p>If you have <a href="http://git-scm.com">git</a>, you can clone the repository:</p>
 
 <div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code>git clone https://github.com/guitt/sh.js.git
 </code></pre></div>
 
 
-<p>and use <code>require</code> with a path in your script:</p>
+<p>A few weeks from now, you'll just have to run the following to update:</p>
 
-<div class="highlight"><pre class="line_nums">&nbsp;
-&nbsp;</pre><pre><code><span class="kd">var</span> <span class="nx">sh</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;/path/to/shjs/sh.js&#39;</span><span class="p">).</span><span class="nx">sh</span><span class="p">;</span>
-<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;echo hello&#39;</span><span class="p">);</span>
+<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code>git pull
 </code></pre></div>
 
 
-<p>You may go to the <code>test</code> directory and run <code>./run_tests.sh</code> to make sure it's worthwhile going on.</p>
+<p>Now go to the directory and run the tests:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;
+&nbsp;
+&nbsp;</pre><pre><code>rake <span class="nb">test</span>                        <span class="c"># obviously you need rake</span>
+<span class="c"># or</span>
+<span class="nb">cd test</span> <span class="o">&amp;&amp;</span> ./run_tests.sh        <span class="c"># this only requires sh</span>
+</code></pre></div>
+
+
+<p>If it prints "All tests passed", you can head to the <a href="./tutorial.html">tutorial</a>. Otherwise, please report the issue on github.</p>
 
 </div>
 <div id=footer>Copyright 2010 Guillaume Tuton, some rights reserved.

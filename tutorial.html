@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
   <title>Tutorial</title>
   <link type="text/css" rel="stylesheet" href="main.css">
@@ -39,11 +39,35 @@
 
 <hr />
 
-<p><b>In a terminal, head to the <code>examples</code> directory, and run <code>./00-hello.example.js</code></b></p>
+<h3 id="require"><code>require</code></h3>
+
+<p>Depending on your <a href="./install.html">installation</a>, there are two ways you can <code>require</code> sh.js.</p>
+
+<h4 id="1-On-npm-installs">1. On npm installs</h4>
+
+<p>If you installed with npm, simply require <code>sh</code>:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;
+&nbsp;</pre><pre><code><span class="kd">var</span> <span class="nx">sh</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;sh&#39;</span><span class="p">);</span>
+<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;echo hello&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+
+<h4 id="2-On-git-installs">2. On git installs</h4>
+
+<p>If you installed with git, you need to require a path:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;
+&nbsp;</pre><pre><code><span class="kd">var</span> <span class="nx">sh</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;/path/to/shjs/sh&#39;</span><span class="p">);</span>
+<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;echo hello&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+
+<h3 id="Introduction">Introduction</h3>
 
 <p>Examples in this tutorial may have a file name indicating you can run it in the <code>examples</code> directory.</p>
 
-<h3 id="Introduction">Introduction</h3>
+<p><b>In a terminal, head to the <code>examples</code> directory, and run <code>./00-hello.example.js</code></b></p>
 
 <p>At its core, sh.js launches programs:</p>
 
@@ -149,13 +173,13 @@
 </code></pre></div>
 
 
-<p>Piping stderr is quite similar to stdout, you need to interleave <code>.e</code>:</p>
+<p>Piping stderr is quite similar to stdout, you need to interleave <code>.err</code>:</p>
 
 <div class="highlight"><pre class="line_nums">&nbsp;
 &nbsp;
 &nbsp;</pre><pre><code><span class="c1">// examples/06-pipe_err_to_null.example.js</span>
 
-<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;find /var -type s&#39;</span><span class="p">).</span><span class="nx">e</span><span class="p">.</span><span class="nx">file</span><span class="p">(</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">);</span>
+<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;find /var -type s&#39;</span><span class="p">).</span><span class="nx">err</span><span class="p">.</span><span class="nx">file</span><span class="p">(</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">);</span>
 </code></pre></div>
 
 
@@ -261,7 +285,11 @@
 
 <p>Bash equivalent:</p>
 
-<div class="highlight"><pre class="line_nums">&nbsp;</pre><pre><code>date &amp; sleep 2 &amp; date &amp;
+<div class="highlight"><pre class="line_nums">&nbsp;
+&nbsp;
+&nbsp;</pre><pre><code>date &amp;
+sleep 2 &amp;
+date &amp;
 </code></pre></div>
 
 
@@ -468,7 +496,7 @@ date
 2
 3
 4
-5</pre><pre><code><span class="c1">// examples/19-unset_my_var.example.js</span>
+5</pre><pre><code><span class="c1">// examples/18-unset_my_var.example.js</span>
 
 <span class="nx">sh</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;MY_VAR&#39;</span><span class="p">,</span> <span class="mi">123</span><span class="p">)</span>
 <span class="p">.</span><span class="nx">and</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">&#39;MY_VAR&#39;</span><span class="p">,</span> <span class="nx">sh</span><span class="p">.</span><span class="nx">UNSET</span><span class="p">)</span>
@@ -484,7 +512,7 @@ date
 4
 5
 6
-7</pre><pre><code><span class="c1">// examples/18-unset_my_var.example.js</span>
+7</pre><pre><code><span class="c1">// examples/19-store_shell.example.js</span>
 
 <span class="kd">var</span> <span class="nx">sh1</span> <span class="o">=</span> <span class="nx">sh</span><span class="p">.</span><span class="nx">cd</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">).</span><span class="nx">and</span><span class="p">;</span>
 <span class="kd">var</span> <span class="nx">sh2</span> <span class="o">=</span> <span class="nx">sh</span><span class="p">.</span><span class="nx">cd</span><span class="p">(</span><span class="s1">&#39;/var&#39;</span><span class="p">).</span><span class="nx">and</span><span class="p">;</span>
@@ -514,15 +542,35 @@ date
 
 <p>We're trying to reproduce the following Bash command (this uses process substitution which is not part of the standard):</p>
 
-<div class="highlight"><pre class="line_nums">&nbsp;
-&nbsp;
-&nbsp;</pre><pre><code>ls / non_existent_file 
+<div class="highlight"><pre class="line_nums">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13</pre><pre><code>ls / non_existent_file 
   2&gt; &gt;<span class="o">(</span> sed s/non_existent/NON_EXISTENT/ <span class="o">)</span> <span class="se">\</span>
   &gt; &gt;<span class="o">(</span> grep etc <span class="o">)</span>
+
+<span class="c"># Output</span>
+<span class="c"># etc</span>
+<span class="c"># ls: ne peut accéder NON_EXISTENT_file: Aucun fichier ou dossier de ce type</span>
+
+<span class="c"># Note: everyone is more familiar with the following, but for the purpose of</span>
+<span class="c"># writing shell scripts in JavaScript, the syntax poses the same problems</span>
+<span class="c"># as above:</span>
+
+ls / non_existent_file &gt; out_stream 2&gt; err_stream
 </code></pre></div>
 
 
-<p>So I've found four ways that I believe do make sense, three of which are implemented so far:</p>
+<p>So I've found four ways that I believe do make sense, three of which are implemented, the other one being removed from the code:</p>
 
 <ul>
 <li>chaining</li>
@@ -534,36 +582,19 @@ date
 
 <h4 id="1-Chaining">1. Chaining</h4>
 
-<p>If you want to pipe both stdout and stderr, you may use <code>.pipe()</code> and <code>.err()</code>:</p>
+<p>This syntax was removed. It looked like:</p>
 
-<div class="highlight"><pre class="line_nums">1
-2
-3
-4
-5
-6
-7
-8
-9</pre><pre><code><span class="c1">// examples/20-chaining_pipes.example.js</span>
-
+<div class="highlight"><pre class="line_nums">&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;</pre><pre><code><span class="c1">// This was remove, it won&#39;t work</span>
 <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">)</span>
   <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">)</span>
   <span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;sed s/non_existent/NON_EXISTENT/&#39;</span><span class="p">);</span>
-
-<span class="c1">// Output</span>
-<span class="c1">// etc</span>
-<span class="c1">// ls: ne peut accéder NON_EXISTENT_file: Aucun fichier ou dossier de ce type</span>
 </code></pre></div>
 
 
-<p>Pros:</p>
-
-<ul>
-<li><p>chaining is probably as natural as you can get in JavaScript.
-Cons:</p></li>
-<li><p>piping several levels of commands may feel awkward because <code>.pipe()</code> and <code>.err()</code> are a syntax of their own.</p></li>
-</ul>
-
+<p>The reason this was removed is I found it too complicated when there is a lot of recursion. It felt awkward because <code>.pipe()</code> and <code>.err()</code> are a syntax of their own.</p>
 
 <h4 id="2-Variables">2. Variables</h4>
 
@@ -574,19 +605,19 @@ Cons:</p></li>
 3
 4
 5
-6</pre><pre><code><span class="c1">// examples/21-pipes_with_variables.example.js</span>
+6</pre><pre><code><span class="c1">// examples/20-pipes_with_variables.example.js</span>
 
 <span class="kd">var</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">);</span>
 
 <span class="nx">l</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">);</span>
-<span class="nx">l</span><span class="p">.</span><span class="nx">e</span><span class="p">(</span><span class="s1">&#39;sed s/non_existent/NON_EXISTENT/&#39;</span><span class="p">);</span>
+<span class="nx">l</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;sed s/non_existent/NON_EXISTENT/&#39;</span><span class="p">);</span>
 </code></pre></div>
 
 
 <p>Pros:</p>
 
 <ul>
-<li>variables are native to JavaScript programmers</li>
+<li>variables are native to JavaScript</li>
 </ul>
 
 
@@ -597,7 +628,7 @@ Cons:</p></li>
 </ul>
 
 
-<h4 id="3-Closures">3. Closures</h4>
+<h4 id="3-Closures-THIS-IS-SUBJECT-TO-CHANGES-">3. Closures (THIS IS SUBJECT TO CHANGES)</h4>
 
 <p>Passing a closure after the command string will run it and identify the piping:</p>
 
@@ -606,7 +637,7 @@ Cons:</p></li>
 3
 4
 5
-6</pre><pre><code><span class="c1">// examples/22-pipes_in_closures.example.js</span>
+6</pre><pre><code><span class="c1">// examples/21-pipes_in_closures.example.js</span>
 
 <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">l</span><span class="p">)</span> <span class="p">{</span>
   <span class="nx">l</span><span class="p">.</span><span class="nx">out</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">);</span>
@@ -618,7 +649,7 @@ Cons:</p></li>
 <p>Pros:</p>
 
 <ul>
-<li>it doesn't clobber the variable namespace</li>
+<li>it doesn't clobber the variable namespace like above</li>
 </ul>
 
 
@@ -632,14 +663,14 @@ Cons:</p></li>
 
 <h4 id="4-Arguments">4. Arguments</h4>
 
-<p>I thought of this one only recently, so I haven't implemented it yet, but I believe it's very feasible:</p>
+<p>In this syntax, you use one argument for each stream to tell the command how you want to pipe it</p>
 
 <div class="highlight"><pre class="line_nums">1
 2
 3
 4
 5
-6</pre><pre><code><span class="c1">// not implemented yet</span>
+6</pre><pre><code><span class="c1">// examples/22-branch_arguments.example.js</span>
 
 <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">,</span>
   <span class="nx">sh</span><span class="p">.</span><span class="nx">out</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">),</span>
@@ -651,9 +682,8 @@ Cons:</p></li>
 <p>Pros:</p>
 
 <ul>
-<li>no need for a throw-away variable</li>
-<li>nearly as natural as chaining</li>
-<li><p>will be very nice in <a href="http://jashkenas.github.com/coffee-script/">CoffeeScript</a>, except for the <code>sh.</code>:</p>
+<li>rather clean syntax</li>
+<li><p>very nice in <a href="http://jashkenas.github.com/coffee-script/">CoffeeScript</a>, except for the <code>sh.</code>:</p>
 
 <div class="highlight"><pre class="line_nums">&nbsp;
 &nbsp;
@@ -672,27 +702,9 @@ Cons:</p></li>
 </ul>
 
 
-<h3 id="Random-tricks">Random tricks</h3>
+<h3 id="Putting-everything-together">Putting everything together</h3>
 
-<h4 id="Cache-result">Cache result</h4>
-
-<p>In Bash, you frequently use several variables before you run a command:</p>
-
-<div class="highlight"><pre class="line_nums">1
-2
-3
-4
-5
-6</pre><pre><code><span class="nv">var1</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo </span>hello<span class="sb">`</span>
-<span class="nv">var2</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo </span>world<span class="sb">`</span>
-<span class="nv">var3</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo </span>and<span class="sb">`</span>
-<span class="nv">var4</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo </span>universe<span class="sb">`</span>
-
-<span class="nb">echo</span> <span class="nv">$var1</span> <span class="nv">$var2</span> <span class="nv">$var3</span> <span class="nv">$var4</span>
-</code></pre></div>
-
-
-<p>To avoid having too many recursive callbacks, sh.js has the <code>.cache</code> property:</p>
+<p>Of course, the idioms above are not mutally exclusive.</p>
 
 <div class="highlight"><pre class="line_nums">1
 2
@@ -701,18 +713,40 @@ Cons:</p></li>
 5
 6
 7
-8</pre><pre><code><span class="c1">// examples/23-cache_result.example.js</span>
+8
+9
+10
+11
+12
+13</pre><pre><code><span class="c1">// examples/23-advanced.example.js</span>
 
-<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;echo hello&#39;</span><span class="p">).</span><span class="nx">cache</span>
-<span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="s1">&#39;echo world&#39;</span><span class="p">).</span><span class="nx">cache</span>
-<span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="s1">&#39;echo and&#39;</span><span class="p">).</span><span class="nx">cache</span>
-<span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="s1">&#39;echo universe&#39;</span><span class="p">).</span><span class="nx">result</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">var1</span><span class="p">,</span> <span class="nx">var2</span><span class="p">,</span> <span class="nx">var3</span><span class="p">,</span> <span class="nx">var4</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;echo &#39;</span><span class="o">+</span><span class="nx">var1</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="nx">var2</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="nx">var3</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">+</span><span class="nx">var4</span><span class="p">);</span>
-<span class="p">});</span>
+<span class="kd">var</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">,</span>
+  <span class="nx">sh</span><span class="p">.</span><span class="nx">out</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">),</span>
+  <span class="nx">sh</span><span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="s1">&#39;echo ls succeeded&#39;</span><span class="p">),</span>
+  <span class="kd">function</span><span class="p">(</span><span class="nx">l</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">l</span><span class="p">.</span><span class="nx">err</span><span class="p">.</span><span class="nx">file</span><span class="p">(</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">);</span>
+    <span class="nx">l</span><span class="p">.</span><span class="nx">or</span><span class="p">(</span><span class="s1">&#39;echo ls failed&#39;</span><span class="p">);</span>
+    <span class="nx">l</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="s1">&#39;echo ls finished (1)&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">);</span>
+
+<span class="nx">l</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="s1">&#39;echo ls finished (2)&#39;</span><span class="p">);</span>
 </code></pre></div>
 
 
-<p><code>.cache</code> is hooked with a getter so sh.js interprets it as "cache the output of the previous command and give it back when I call <code>.result()</code>".</p>
+<p>Here we combine:</p>
+
+<ul>
+<li>piping standard output to a process line (4)</li>
+<li>redirecting standard error to <code>/dev/null</code> line (7)</li>
+<li>reacting to the exit status lines (5), (8), (9) and (13)</li>
+<li>arguments lines (4) and (5)</li>
+<li>a closure lines (6) througth (10)</li>
+<li>a variable line (13)</li>
+</ul>
+
+
+<h3 id="Random-tricks">Random tricks</h3>
 
 <h4 id="Output-Only">Output Only</h4>
 
