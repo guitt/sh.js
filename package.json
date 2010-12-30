@@ -1,0 +1,37 @@
+{
+
+  "name" :          "sh"
+, "version" :       "0.0.1"
+
+
+, "description" :   "Javascript library for Unix shell scripting on node.js"
+, "keywords" :      ["shell", "script", "unix", "bash"]
+, "homepage" :      "http://shjs.tuton.fr"
+
+
+, "author" :        "Guillaume Tuton"
+
+
+, "main" :          "./sh"
+, "scripts" :       {
+    "test" :        "rake test"
+  }
+
+
+, "repository" :    {
+    "type" :        "git"
+  , "url" :         "https://github.com/guitt/sh.js.git"
+  }
+
+
+, "licenses" :      [{
+    "type" :        "LGPLv3"
+,   "url" :         "https://github.com/guitt/sh.js/raw/master/LICENSE"
+  }]
+
+
+, "engines" :       {
+    "node" :        ">=0.3.0"
+  }
+
+}
