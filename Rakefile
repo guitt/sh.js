@@ -8,6 +8,10 @@ manifest =  'build/doc/doc.manifest'
 
 task :default => :docs
 
+task 'gh-pages' => :docs do
+  sh "doc/add_analytics.py build/doc/*.html"
+end
+
 task :docs => manifest
 
 directory 'build/doc'
