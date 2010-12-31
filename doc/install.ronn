@@ -17,7 +17,7 @@ A few weeks from now, you'll just have to run the following to update:
     ///pygments:bash
     npm update sh
 
-Then you can make sure everything is okay by running the unit tests (you need [rake](http://rubyrake.org/):
+Then you can make sure everything is okay by running the unit tests (you need [rake](http://rubyrake.org/)):
 
     ///pygments:bash
     npm test sh

@@ -323,12 +323,12 @@ So I've found four ways that I believe do make sense, three of which are impleme
 This syntax was removed. It looked like:
 
     ///pygments:javascript
-    // This was remove, it won't work
+    // This was removed, it won't work
     sh('ls / non_existent_file')
       .pipe('grep etc')
       .err('sed s/non_existent/NON_EXISTENT/');
 
-The reason this was removed is I found it too complicated when there is a lot of recursion. It felt awkward because `.pipe()` and `.err()` are a syntax of their own.
+The reason this was removed is I found it too complicated when there is a lot of recursion. It felt awkward because `.pipe()` and `.err()` break easily if they are not properly ordered.
 
 #### 2. Variables
 
