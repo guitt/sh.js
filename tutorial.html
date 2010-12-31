@@ -641,7 +641,7 @@ ls / non_existent_file &gt; out_stream 2&gt; err_stream
 </ul>
 
 
-<h4 id="3-Closures-THIS-IS-SUBJECT-TO-CHANGES-">3. Closures (THIS IS SUBJECT TO CHANGES)</h4>
+<h4 id="3-Closures">3. Closures</h4>
 
 <p>Passing a closure after the command string will run it and identify the piping:</p>
 
@@ -652,9 +652,9 @@ ls / non_existent_file &gt; out_stream 2&gt; err_stream
 5
 6</pre><pre><code><span class="c1">// examples/21-pipes_in_closures.example.js</span>
 
-<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">l</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">l</span><span class="p">.</span><span class="nx">out</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">);</span>
-  <span class="nx">l</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;sed s/non_existent/NON_EXISTENT/&#39;</span><span class="p">);</span>
+<span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">out</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">);</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;sed s/non_existent/NON_EXISTENT/&#39;</span><span class="p">);</span>
 <span class="p">});</span>
 </code></pre></div>
 
@@ -663,6 +663,15 @@ ls / non_existent_file &gt; out_stream 2&gt; err_stream
 
 <ul>
 <li>it doesn't clobber the variable namespace like above</li>
+<li><p>very nice in <a href="http://jashkenas.github.com/coffee-script/">CoffeeScript</a>:</p>
+
+<div class="highlight"><pre class="line_nums">&nbsp;
+&nbsp;
+&nbsp;</pre><pre><code><span class="nx">sh</span> <span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
+  <span class="err">@</span><span class="nx">out</span> <span class="s1">&#39;grep etc&#39;</span>
+  <span class="err">@</span><span class="nx">err</span> <span class="s1">&#39;sed s/non_existent/NON_EXISTENT/&#39;</span>
+</code></pre></div>
+</li>
 </ul>
 
 
@@ -696,7 +705,7 @@ ls / non_existent_file &gt; out_stream 2&gt; err_stream
 
 <ul>
 <li>rather clean syntax</li>
-<li><p>very nice in <a href="http://jashkenas.github.com/coffee-script/">CoffeeScript</a>, except for the <code>sh.</code>:</p>
+<li><p>CoffeeScript-friendly:</p>
 
 <div class="highlight"><pre class="line_nums">&nbsp;
 &nbsp;
@@ -711,7 +720,7 @@ ls / non_existent_file &gt; out_stream 2&gt; err_stream
 <p>Cons:</p>
 
 <ul>
-<li>there is still noise</li>
+<li>compared to closures, you can't run code</li>
 </ul>
 
 
@@ -736,10 +745,10 @@ ls / non_existent_file &gt; out_stream 2&gt; err_stream
 <span class="kd">var</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">,</span>
   <span class="nx">sh</span><span class="p">.</span><span class="nx">out</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">),</span>
   <span class="nx">sh</span><span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="s1">&#39;echo ls succeeded&#39;</span><span class="p">),</span>
-  <span class="kd">function</span><span class="p">(</span><span class="nx">l</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">l</span><span class="p">.</span><span class="nx">err</span><span class="p">.</span><span class="nx">file</span><span class="p">(</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">);</span>
-    <span class="nx">l</span><span class="p">.</span><span class="nx">or</span><span class="p">(</span><span class="s1">&#39;echo ls failed&#39;</span><span class="p">);</span>
-    <span class="nx">l</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="s1">&#39;echo ls finished (1)&#39;</span><span class="p">);</span>
+  <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">err</span><span class="p">.</span><span class="nx">file</span><span class="p">(</span><span class="s1">&#39;/dev/null&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">or</span><span class="p">(</span><span class="s1">&#39;echo ls failed&#39;</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="s1">&#39;echo ls finished (1)&#39;</span><span class="p">);</span>
   <span class="p">}</span>
 <span class="p">);</span>
 
