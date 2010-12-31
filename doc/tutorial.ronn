@@ -345,7 +345,7 @@ Cons:
 
 -   it quickly gets messy
 
-#### 3. Closures (THIS IS SUBJECT TO CHANGES)
+#### 3. Closures
 
 Passing a closure after the command string will run it and identify the piping:
 
@@ -355,6 +355,12 @@ Passing a closure after the command string will run it and identify the piping:
 Pros:
 
 -   it doesn't clobber the variable namespace like above
+-   very nice in [CoffeeScript](http://jashkenas.github.com/coffee-script/):
+
+        ///pygments:coffeescript
+        sh 'ls / non_existent_file', ->
+          @out 'grep etc'
+          @err 'sed s/non_existent/NON_EXISTENT/'
 
 Cons:
 
@@ -371,7 +377,7 @@ In this syntax, you use one argument for each stream to tell the command how you
 Pros:
 
 -   rather clean syntax
--   very nice in [CoffeeScript](http://jashkenas.github.com/coffee-script/), except for the `sh.`:
+-   CoffeeScript-friendly:
 
         ///pygments:coffeescript
         sh 'ls / non_existent_file',
@@ -380,7 +386,7 @@ Pros:
 
 Cons:
 
--   there is still noise
+-   compared to closures, you can't run code
 
 ### Putting everything together
 
