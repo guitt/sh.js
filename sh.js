@@ -1003,7 +1003,7 @@ function GenericCommand(arg0, arg1, arg2, arg3) {
       //command.out = null;
       //command.err = null;
       
-      arguments[closureNumber](this.api);
+      arguments[closureNumber].call(this.api);
       
       if (cc !== this.cacheCommands)
         throw new Error('internal error: the closure messed up the '

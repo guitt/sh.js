@@ -18,19 +18,19 @@ process.on('exit', function() {
  */
 var ls = sh('ls . nxfile');
 
-ls.out('sed s/test/TTEESSTT/', function(c) {
+ls.out('sed s/test/TTEESSTT/', function() {
   hasRun[0] = true;
   
-  c.out.result(function(arg) {
+  this.out.result(function(arg) {
     hasRun[1] = true;
     assert.ok(arg.indexOf('TTEESSTT') > -1, 'we get sed\'s output, not ls\'');
   });
 
-  c.or(function(status) {
+  this.or(function(status) {
     throw new Error('sed is supposed to return 0, we got: ' + status);
   });
   
-  c.and(function() {
+  this.and(function() {
     hasRun[2] = true;
   });
 });

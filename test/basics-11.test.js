@@ -22,8 +22,8 @@ sh('ls . nxfile', sh.OO)('cat').result(function(arg) {
 });
 
 // Same test but with a closure
-sh('ls . nxfile', sh.OO)('cat', function(c) {
-  c.result(function(arg) {
+sh('ls . nxfile', sh.OO)('cat', function() {
+  this.result(function(arg) {
     hasRun[1] = true;
 
     assert.ok(arg.indexOf('nxfile') > -1, 'we get stderr on stdout');
@@ -32,9 +32,9 @@ sh('ls . nxfile', sh.OO)('cat', function(c) {
 });
 
 // Same test but with three arguments on the root
-sh('ls . nxfile', sh.OO, function(ls) {
-  ls('cat', function(c) {
-    c.result(function(arg) {
+sh('ls . nxfile', sh.OO, function() {
+  this('cat', function() {
+    this.result(function(arg) {
       hasRun[2] = true;
 
       assert.ok(arg.indexOf('nxfile') > -1, 'we get stderr on stdout');
@@ -54,8 +54,8 @@ sh('ls . nxfile', sh.OO).file(tmpFile).then('cat ' + tmpFile).result(function(ar
 
 // Same but with a closure
 var tmpFile = '/tmp/sh.js_basics-11.test.js.dump' + ((new Date).getTime() + 1);
-sh('ls . nxfile', sh.OO, function(ls) {
-  ls.file(tmpFile).then('cat ' + tmpFile).result(function(arg) {
+sh('ls . nxfile', sh.OO, function() {
+  this.file(tmpFile).then('cat ' + tmpFile).result(function(arg) {
     hasRun[3] = true;
     
     assert.ok(arg.indexOf('nxfile') > -1, 'we get stderr on stdout');
