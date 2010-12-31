@@ -587,14 +587,14 @@ ls / non_existent_file &gt; out_stream 2&gt; err_stream
 <div class="highlight"><pre class="line_nums">&nbsp;
 &nbsp;
 &nbsp;
-&nbsp;</pre><pre><code><span class="c1">// This was remove, it won&#39;t work</span>
+&nbsp;</pre><pre><code><span class="c1">// This was removed, it won&#39;t work</span>
 <span class="nx">sh</span><span class="p">(</span><span class="s1">&#39;ls / non_existent_file&#39;</span><span class="p">)</span>
   <span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="s1">&#39;grep etc&#39;</span><span class="p">)</span>
   <span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;sed s/non_existent/NON_EXISTENT/&#39;</span><span class="p">);</span>
 </code></pre></div>
 
 
-<p>The reason this was removed is I found it too complicated when there is a lot of recursion. It felt awkward because <code>.pipe()</code> and <code>.err()</code> are a syntax of their own.</p>
+<p>The reason this was removed is I found it too complicated when there is a lot of recursion. It felt awkward because <code>.pipe()</code> and <code>.err()</code> break easily if they are not properly ordered.</p>
 
 <h4 id="2-Variables">2. Variables</h4>
 
