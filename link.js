@@ -22,6 +22,9 @@ function addHooks(def, set, noRecurse) {
   
   if (props) {
     for (var p in props) {
+      if (! props.hasOwnProperty(p))
+        continue
+
       // skip this property if it has already been added
       if (set[p] === undefined) {
         set[p] = true;
@@ -31,6 +34,9 @@ function addHooks(def, set, noRecurse) {
   
   if (!noRecurse) {
     for (var n in def.APIs) {
+      if (! def.APIs.hasOwnProperty(n))
+        continue
+
       addHooks(def.APIs[n], set);
     }
   }
@@ -55,6 +61,9 @@ function makePrototype(hookSet, getter, setter) {
     throw new TypeError("missing setter callback");
   
   for (var p in hookSet) {
+    if (! hookSet.hasOwnProperty(p))
+      continue
+
     (function() {
       var q = p;
       

@@ -276,8 +276,8 @@ function runExitCommands(c, status) {
   if (c.type === CACHE_TYPE)
     return;
     
-  if (exit && exit.length) {
-    for (var i in exit) {
+  if (exit) {
+    for (var i = 0, l = exit.length; i < l; i++) {
     
       if (exit[i].condition === AND && status === 0)
         runCommand(exit[i]);
@@ -357,7 +357,7 @@ function listen() {
           bufs = callback.args[stream.argPosition],
           arg = '';
           
-        for (var j in bufs) {
+        for (var j = 0, l = bufs.length; j < l; j++) {
           arg += bufs[j].toString('utf8', 0, bufs[j].length);
         }
         
@@ -445,7 +445,7 @@ Program.prototype = {
     if (cmd instanceof Array) {
       var argv = [];
       
-      for (var i in cmd)
+      for (var i = 0, l = cmd.length; i < l; i++)
         argv.push(cmd[i]);
         
     } else
