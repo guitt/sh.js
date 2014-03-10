@@ -1,7 +1,7 @@
 {
 
   "name" :          "sh"
-, "version" :       "0.0.2"
+, "version" :       "0.0.3"
 
 
 , "description" :   "Javascript library for Unix shell scripting on node.js"
@@ -31,7 +31,7 @@
 
 
 , "engines" :       {
-    "node" :        ">=0.3.0"
+    "node" :        ">=0.10.25"
   }
 
 }

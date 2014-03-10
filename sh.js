@@ -29,6 +29,10 @@ var
   
   forEachDelimiter = new RegExp('\\s+', 'g');
 
+/*
+ *  Representation alike the current working directory of a process; it will be
+ *  inherited by commands chained after calling `sh.cd`
+ */
 function WorkingDir(arg0) {
   if (arg0 instanceof WorkingDir)
     this.previousDir = arg0;
@@ -86,6 +90,11 @@ WorkingDir.prototype = {
   }
 }
 
+/*
+ *  Representation modeled after the environment of processes; you can export
+ *  environment variables and chained commands will have them in their own
+ *  environment
+ */
 function WorkingEnv(arg0) {
   if (arg0 instanceof WorkingEnv)
     this.previousEnv = arg0;
@@ -185,19 +194,18 @@ function plug(s) {
   
     switch(c[s].type) {
     case CMD_TYPE:
-      var fds = process.binding('net').pipe();
-      
-      this.customFds[index] = fds[1];
+      this.stdio[index] = 'pipe';
       this['close'+S] = true;
       
       c[s].in = {
         close: true,
-        fd: fds[0]
+        index: index,
+        program: this
       };
       
       break;
     case FD_TYPE:
-      this.customFds[index] = c[s].fd;
+      this.stdio[index] = c[s].fd;
       if (c[s].close === true) this['close'+S] = true;
       
       break;
@@ -230,7 +238,7 @@ function plug(s) {
           }
         }
         that['close'+S] = true;
-        that.customFds[index] = fd;
+        that.stdio[index] = fd;
         that[waitingForStream] = false;
         that.attemptSpawning();
       });
@@ -239,7 +247,7 @@ function plug(s) {
       break;
     case CACHE_TYPE:
     case FOR_EACH_TYPE:
-      this.customFds[index] = -1;
+      this.stdio[index] = 'pipe';
       break;
     }
     
@@ -319,7 +327,7 @@ function listen() {
     
     // wrap the method of stdout so they callback their counterparts of stderr
     ['destroy', 'pause', 'resume', 'setEncoding'].forEach(function(methodName) {
-      var method = sdtout[methodName];
+      var method = stdout[methodName];
       stdout[method] = function() {
         stdout[method].apply(stdout, arguments);
         stderr[method].apply(stderr, arguments);
@@ -352,7 +360,7 @@ function listen() {
           throw new Error('cache is full (' + callback.cacheSize + ' bytes');
       });
       
-      p.on('exit', function() {
+      p['std'+s].on('close', function() {
         var
           bufs = callback.args[stream.argPosition],
           arg = '';
@@ -376,7 +384,7 @@ function listen() {
         input += data.toString('utf8', 0, data.length);
       });
       
-      p.on('exit', function() {
+      p.on('close', function() {
         var args = input.split(forEachDelimiter);
         
         for (var i = 0, l = args.length; i < l; i++) {
@@ -399,7 +407,7 @@ function listen() {
 
 function Program(cmd) {
   this.cmd = cmd;
-  this.customFds = [0,1,2];
+  this.stdio = [0,1,2];
 
   // Bind the attemptSpawning method with this, because the function is meant to
   // be used as a callback
@@ -413,13 +421,13 @@ function Program(cmd) {
       return;
     
     //console.log('aborting');
-    if (that.closeIn) fs.close(that.customFds[0]);
-    if (that.closeOut) fs.close(that.customFds[1]);
-    if (that.closeErr) fs.close(that.customFds[2]);
+    if (that.closeIn) fs.close(that.stdio[0]);
+    if (that.closeOut) fs.close(that.stdio[1]);
+    if (that.closeErr) fs.close(that.stdio[2]);
   };
 
-  if (cmd.in && cmd.in.fd) {
-    this.customFds[0] = cmd.in.fd;
+  if (cmd.in && cmd.in.program) {
+    this.stdio[0] = 'pipe';
     if (cmd.in.close === true) {
       this.closeIn = true;
     }
@@ -439,7 +447,7 @@ function Program(cmd) {
 Program.prototype = {
   spawn: function() {
     if (this.cmd.errToOut === true)
-      this.customFds[2] = this.customFds[1];
+      this.stdio[2] = this.stdio[1];
     
     var cmd = this.cmd.cmd;
     if (cmd instanceof Array) {
@@ -452,20 +460,49 @@ Program.prototype = {
       var argv = parser.parse(this.cmd.cmd);
     
     var executable = argv.shift();
+    
     var options = {
-      customFds: this.customFds,
+      stdio: this.stdio,
       env: this.cmd.env.getEnv(),
       cwd: this.cmd.cwd.getPath(),
       closeFds: true,
     };
-    //console.log(executable, argv);
-    //console.log(options);
     this.process = spawn(executable, argv, options);
     
+    // pipe streams
+    var cmdIn = this.cmd.in;
+    if (cmdIn && cmdIn.program) {
+      var that = this;
+      /* onend handler to end the stdin stream on a process */
+      function onpipeend() {
+        pipesToEnd--;
+        if (pipesToEnd === 0)
+          // all streams piped to stdin have ended
+          that.process.stdin.end();
+      }
+      var pipesToEnd = 0;
+      if (cmdIn.index === 1) {
+        pipesToEnd++;
+        // pipe stdout from upstream to this stdin; don't end stdin when stdout
+        // ends, because stderr may still be writing data to stdin; use
+        // onpipeend to decide when to end stdin
+        cmdIn.program.process.stdout.pipe(this.process.stdin, { end: false });
+        cmdIn.program.process.stdout.on('end', onpipeend)
+      }
+      if (cmdIn.index === 2
+        // the upstream program writes stderr on stdout, so we need to pipe it
+        // to this stdin too
+        || cmdIn.program.cmd.errToOut === true) {
+        pipesToEnd++;
+        cmdIn.program.process.stderr.pipe(this.process.stdin, { end: false });
+        cmdIn.program.process.stderr.on('end', onpipeend)
+      }
+    }
+    
     // close fds
-    if (this.closeIn) fs.close(this.customFds[0]);
-    if (this.closeOut) fs.close(this.customFds[1]);
-    if (this.closeErr) fs.close(this.customFds[2]);
+    if (this.closeIn && typeof this.stdio[0] === 'number') fs.close(this.stdio[0]);
+    if (this.closeOut && typeof this.stdio[1] === 'number') fs.close(this.stdio[1]);
+    if (this.closeErr && typeof this.stdio[2] === 'number') fs.close(this.stdio[2]);
     
     // spawn out and err streams
     if (this.cmd.out) runCommand(this.cmd.out);
