@@ -75,7 +75,7 @@ Bash equivalent:
     ///pygments:bash
     find . -size -100c > 100c_files
 
-Alternatively, there is an `.append()` method that appends to a file instead of (over)writting it (like `>>`).
+Alternatively, there is an `.append()` method that appends to a file instead of (over-)writing it (like `>>`).
 
 You can also cache the output of a command, and receive it in an callback:
 
